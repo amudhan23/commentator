@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { AudioSpikeDetector } from "./engine/detector.js";
 import { generateGroundedCommentary } from "./commentary/generate.js";
 import { synthesize } from "./voice/speak.js";
@@ -142,7 +143,11 @@ function fmt(sec: number): string {
 }
 
 // CLI:  npm run track -- <clip> <persona> <langSlug>
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Cross-platform "was this file run directly?" check (Windows file:// URLs
+// don't string-match process.argv[1], so compare resolved OS paths instead).
+const runDirectly =
+  !!process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (runDirectly) {
   const [clip, persona = "drury", langSlug = "en"] = process.argv.slice(2);
   if (!clip) {
     console.error("Usage: npm run track -- <clip.mp4> [drury|analyst|neutral] [en|ta|hi|es|pt]");
