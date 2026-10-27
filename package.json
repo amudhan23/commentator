@@ -10,6 +10,7 @@
     "detect": "tsx --env-file=.env src/scripts/03-detect-spike.ts",
     "demo": "tsx --env-file=.env src/index.ts",
     "track": "tsx --env-file=.env src/pipeline.ts",
+    "models": "tsx --env-file=.env src/scripts/list-models.ts",
     "serve": "tsx serve.ts"
   },
   "dependencies": {
