@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { mkdir, readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { FFMPEG } from "../util/ffmpeg.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Pull actual frames out of the video so the agent can SEE the play.
@@ -57,7 +58,7 @@ export async function extractBurst(
 
 function runFfmpeg(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", ...args]);
+    const ff = spawn(FFMPEG, ["-y", "-loglevel", "error", ...args]);
     let err = "";
     ff.stderr.on("data", (d) => (err += d));
     ff.on("error", (e) => reject(new Error(`ffmpeg not runnable: ${e.message}`)));

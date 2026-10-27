@@ -44,7 +44,7 @@ public/          ← the web UI
 
 1. **Install prerequisites**
    - [Node.js](https://nodejs.org) 20.6+ (needs `--env-file`)
-   - ffmpeg: `brew install ffmpeg` (macOS) or your package manager
+   - (ffmpeg is bundled via `ffmpeg-static` on install — no system install needed)
 2. **Install deps:** `npm install`
 3. **Keys:** `cp .env.example .env`, then paste your **free** Gemini key
    (get one at [aistudio.google.com](https://aistudio.google.com) → "Get API key").

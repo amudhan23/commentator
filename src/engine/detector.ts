@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { Moment, MomentDetector } from "./types.js";
+import { FFMPEG } from "../util/ffmpeg.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // AudioSpikeDetector
@@ -97,7 +98,7 @@ export class AudioSpikeDetector implements MomentDetector {
  */
 function decodeToPcm(path: string): Promise<Int16Array> {
   return new Promise((resolve, reject) => {
-    const ff = spawn("ffmpeg", [
+    const ff = spawn(FFMPEG, [
       "-i", path,
       "-ac", "1", // mono
       "-ar", String(SAMPLE_RATE), // resample
@@ -109,7 +110,7 @@ function decodeToPcm(path: string): Promise<Int16Array> {
     ff.stdout.on("data", (c) => chunks.push(c));
     ff.stderr.on("data", () => {}); // ffmpeg logs to stderr; ignore for now
     ff.on("error", (e) =>
-      reject(new Error(`Could not run ffmpeg (is it installed?): ${e.message}`)),
+      reject(new Error(`Could not run ffmpeg: ${e.message}`)),
     );
     ff.on("close", (code) => {
       if (code !== 0) return reject(new Error(`ffmpeg exited with code ${code}`));
