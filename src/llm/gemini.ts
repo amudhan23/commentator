@@ -33,21 +33,24 @@ export async function geminiText(
 }
 
 /**
- * Retry on rate-limit (429 / RESOURCE_EXHAUSTED) with exponential backoff.
- * The free tier allows a limited number of requests per minute, so a run that
- * makes many vision calls will brush the limit — this rides over it instead of
- * crashing. Non-rate-limit errors throw immediately.
+ * Retry transient failures with exponential backoff:
+ *   - rate limits (429 / RESOURCE_EXHAUSTED) — free tier caps requests/minute
+ *   - server overload (500/502/503/504, UNAVAILABLE, "high demand")
+ * Both are temporary, so riding over them beats crashing a long run.
+ * Other errors (bad key, bad request) throw immediately.
  */
-async function withRetry<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, tries = 6): Promise<T> {
   let delayMs = 3000;
   for (let i = 0; i < tries; i++) {
     try {
       return await fn();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      const rateLimited = /429|quota|rate.?limit|RESOURCE_EXHAUSTED/i.test(msg);
-      if (!rateLimited || i === tries - 1) throw e;
-      console.log(`  (rate limited — waiting ${delayMs / 1000}s, retry ${i + 1}/${tries - 1})`);
+      const transient =
+        /429|quota|rate.?limit|RESOURCE_EXHAUSTED/i.test(msg) ||
+        /\b(500|502|503|504)\b|UNAVAILABLE|overloaded|high demand|try again/i.test(msg);
+      if (!transient || i === tries - 1) throw e;
+      console.log(`  (server busy/limited — waiting ${delayMs / 1000}s, retry ${i + 1}/${tries - 1})`);
       await new Promise((r) => setTimeout(r, delayMs));
       delayMs = Math.min(delayMs * 2, 60_000);
     }
