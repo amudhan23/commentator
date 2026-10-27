@@ -82,41 +82,48 @@ export async function buildTrack(opts: PipelineOptions): Promise<string> {
   const events: ManifestEvent[] = [];
   let i = 0;
   for (const c of candidates) {
-    // 2. SEE — the agent looks at the frames around the spike.
-    const frames = await extractBurst(opts.clipPath, c.tSeconds, { count: 5 });
-    const analysis: PlayAnalysis = await analyzePlay(frames);
+    try {
+      // 2. SEE — the agent looks at the frames around the spike.
+      const frames = await extractBurst(opts.clipPath, c.tSeconds, { count: 5 });
+      const analysis: PlayAnalysis = await analyzePlay(frames);
 
-    // Filter: a loud crowd during a throw-in is not a moment. Vision decides.
-    if (analysis.significance < minSig || analysis.eventType === "nothing") {
-      console.log(`  [${fmt(c.tSeconds)}] skipped (${analysis.eventType}, sig ${analysis.significance})`);
-      continue;
+      // Filter: a loud crowd during a throw-in is not a moment. Vision decides.
+      if (analysis.significance < minSig || analysis.eventType === "nothing") {
+        console.log(`  [${fmt(c.tSeconds)}] skipped (${analysis.eventType}, sig ${analysis.significance})`);
+        continue;
+      }
+
+      // 3. NARRATE what was actually seen.
+      i++;
+      const text = await generateGroundedCommentary(analysis, {
+        persona: opts.persona,
+        language: lang.name,
+      });
+
+      // 4. VOICE (unless mock).
+      let audio: string | null = null;
+      if (!mock) {
+        const file = `${opts.persona}-${lang.slug}-${i}.mp3`;
+        await synthesize(text, join(audioDir, file));
+        audio = `audio/${file}`;
+      }
+
+      console.log(`  [${fmt(c.tSeconds)}] ${analysis.eventType}: ${text}`);
+      events.push({
+        t: c.tSeconds,
+        text,
+        saw: analysis.description,
+        eventType: analysis.eventType,
+        significance: analysis.significance,
+        onScreen: analysis.onScreen,
+        audio,
+      });
+    } catch (e) {
+      // One moment failing (e.g. the server stayed overloaded through every
+      // retry) shouldn't throw away the whole run — skip it, keep the rest.
+      const msg = e instanceof Error ? e.message : String(e);
+      console.log(`  [${fmt(c.tSeconds)}] skipped (error: ${msg.slice(0, 80)})`);
     }
-
-    // 3. NARRATE what was actually seen.
-    i++;
-    const text = await generateGroundedCommentary(analysis, {
-      persona: opts.persona,
-      language: lang.name,
-    });
-
-    // 4. VOICE (unless mock).
-    let audio: string | null = null;
-    if (!mock) {
-      const file = `${opts.persona}-${lang.slug}-${i}.mp3`;
-      await synthesize(text, join(audioDir, file));
-      audio = `audio/${file}`;
-    }
-
-    console.log(`  [${fmt(c.tSeconds)}] ${analysis.eventType}: ${text}`);
-    events.push({
-      t: c.tSeconds,
-      text,
-      saw: analysis.description,
-      eventType: analysis.eventType,
-      significance: analysis.significance,
-      onScreen: analysis.onScreen,
-      audio,
-    });
   }
 
   const manifest: Manifest = {
