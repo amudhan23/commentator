@@ -2,12 +2,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AudioSpikeDetector } from "./engine/detector.js";
-import { generateGroundedCommentary } from "./commentary/generate.js";
 import { synthesize } from "./voice/speak.js";
 import { PersonaName } from "./commentary/personas.js";
 import { langBySlug } from "./commentary/languages.js";
 import { extractBurst } from "./vision/frames.js";
-import { analyzePlay, PlayAnalysis } from "./vision/analyze.js";
+import { narrateMoment } from "./vision/narrate.js";
 import { geminiText } from "./llm/gemini.js";
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -63,7 +62,7 @@ export async function buildTrack(opts: PipelineOptions): Promise<string> {
   // Preflight: one tiny call so a bad key/model/endpoint fails loudly up front,
   // before we spend time on ffmpeg + vision for every moment.
   try {
-    await geminiText("Reply with the single word OK.", ["ping"], 5);
+    await geminiText("Reply with the single word OK.", ["ping"], 64);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     throw new Error(
@@ -82,7 +81,7 @@ export async function buildTrack(opts: PipelineOptions): Promise<string> {
 
   // Cap to the strongest N by intensity (saves free-tier calls, keeps the demo
   // tight), then put them back in time order for the agent to watch.
-  const max = opts.maxMoments ?? 12;
+  const max = opts.maxMoments ?? (Number(process.env.MAX_MOMENTS) || 8);
   const candidates = [...all]
     .sort((a, b) => b.intensity - a.intensity)
     .slice(0, max)
@@ -96,39 +95,34 @@ export async function buildTrack(opts: PipelineOptions): Promise<string> {
   let i = 0;
   for (const c of candidates) {
     try {
-      // 2. SEE — the agent looks at the frames around the spike.
+      // 2 + 3. SEE and NARRATE in ONE call — the agent watches the frames,
+      // works out what happened, and writes the commentary together.
       const frames = await extractBurst(opts.clipPath, c.tSeconds, { count: 5 });
-      const analysis: PlayAnalysis = await analyzePlay(frames);
+      const m = await narrateMoment(frames, { persona: opts.persona, language: lang.name });
 
       // Filter: a loud crowd during a throw-in is not a moment. Vision decides.
-      if (analysis.significance < minSig || analysis.eventType === "nothing") {
-        console.log(`  [${fmt(c.tSeconds)}] skipped (${analysis.eventType}, sig ${analysis.significance})`);
+      if (m.significance < minSig || m.eventType === "nothing") {
+        console.log(`  [${fmt(c.tSeconds)}] skipped (${m.eventType}, sig ${m.significance})`);
         continue;
       }
 
-      // 3. NARRATE what was actually seen.
-      i++;
-      const text = await generateGroundedCommentary(analysis, {
-        persona: opts.persona,
-        language: lang.name,
-      });
-
       // 4. VOICE (unless mock).
+      i++;
       let audio: string | null = null;
       if (!mock) {
         const file = `${opts.persona}-${lang.slug}-${i}.mp3`;
-        await synthesize(text, join(audioDir, file));
+        await synthesize(m.commentary, join(audioDir, file));
         audio = `audio/${file}`;
       }
 
-      console.log(`  [${fmt(c.tSeconds)}] ${analysis.eventType}: ${text}`);
+      console.log(`  [${fmt(c.tSeconds)}] ${m.eventType}: ${m.commentary}`);
       events.push({
         t: c.tSeconds,
-        text,
-        saw: analysis.description,
-        eventType: analysis.eventType,
-        significance: analysis.significance,
-        onScreen: analysis.onScreen,
+        text: m.commentary,
+        saw: m.description,
+        eventType: m.eventType,
+        significance: m.significance,
+        onScreen: m.onScreen,
         audio,
       });
     } catch (e) {

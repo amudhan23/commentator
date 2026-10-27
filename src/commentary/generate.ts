@@ -36,7 +36,7 @@ export async function generateCommentary(
     language !== "English" ? `Output ONLY the ${language} text, no translation or transliteration, no quotes.` : ``,
   ].filter(Boolean).join(" ");
 
-  return geminiText(PERSONAS[persona], [prompt], 160);
+  return geminiText(PERSONAS[persona], [prompt], 1024);
 }
 
 /**
@@ -59,5 +59,5 @@ export async function generateGroundedCommentary(
     language !== "English" ? `Output ONLY the ${language} text, no translation or transliteration, no quotes.` : ``,
   ].filter(Boolean).join(" ");
 
-  return geminiText(PERSONAS[persona], [prompt], 160);
+  return geminiText(PERSONAS[persona], [prompt], 1024);
 }
