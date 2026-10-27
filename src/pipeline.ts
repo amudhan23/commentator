@@ -8,6 +8,7 @@ import { PersonaName } from "./commentary/personas.js";
 import { langBySlug } from "./commentary/languages.js";
 import { extractBurst } from "./vision/frames.js";
 import { analyzePlay, PlayAnalysis } from "./vision/analyze.js";
+import { geminiText } from "./llm/gemini.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // THE PIPELINE (vision-grounded)
@@ -57,6 +58,18 @@ export interface PipelineOptions {
 export async function buildTrack(opts: PipelineOptions): Promise<string> {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("Set GEMINI_API_KEY in .env (free key at aistudio.google.com).");
+  }
+
+  // Preflight: one tiny call so a bad key/model/endpoint fails loudly up front,
+  // before we spend time on ffmpeg + vision for every moment.
+  try {
+    await geminiText("Reply with the single word OK.", ["ping"], 5);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(
+      `Gemini preflight failed — the API rejected a basic request.\n` +
+        `This is usually the model name or the key. Full error:\n${msg}`,
+    );
   }
   const outDir = opts.outDir ?? "public";
   const lang = langBySlug(opts.langSlug);
@@ -122,7 +135,7 @@ export async function buildTrack(opts: PipelineOptions): Promise<string> {
       // One moment failing (e.g. the server stayed overloaded through every
       // retry) shouldn't throw away the whole run — skip it, keep the rest.
       const msg = e instanceof Error ? e.message : String(e);
-      console.log(`  [${fmt(c.tSeconds)}] skipped (error: ${msg.slice(0, 80)})`);
+      console.log(`  [${fmt(c.tSeconds)}] skipped (error: ${msg})`);
     }
   }
 
