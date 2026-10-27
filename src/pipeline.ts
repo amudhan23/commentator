@@ -49,6 +49,8 @@ export interface PipelineOptions {
   mock?: boolean;
   /** Minimum vision significance to keep a moment (filters out false spikes). */
   minSignificance?: number;
+  /** Max moments to analyze (strongest by audio intensity). Saves API calls. */
+  maxMoments?: number;
 }
 
 export async function buildTrack(opts: PipelineOptions): Promise<string> {
@@ -62,8 +64,16 @@ export async function buildTrack(opts: PipelineOptions): Promise<string> {
 
   // 1. DETECT candidate moments from audio (cheap, fast).
   const detector = new AudioSpikeDetector({ thresholdRatio: 1.7 });
-  const candidates = await detector.detectFromFile(opts.clipPath);
-  console.log(`Audio flagged ${candidates.length} candidate moment(s). Looking at each…`);
+  const all = await detector.detectFromFile(opts.clipPath);
+
+  // Cap to the strongest N by intensity (saves free-tier calls, keeps the demo
+  // tight), then put them back in time order for the agent to watch.
+  const max = opts.maxMoments ?? 12;
+  const candidates = [...all]
+    .sort((a, b) => b.intensity - a.intensity)
+    .slice(0, max)
+    .sort((a, b) => a.tSeconds - b.tSeconds);
+  console.log(`Audio flagged ${all.length}; looking at the top ${candidates.length} by intensity…`);
 
   const audioDir = join(outDir, "audio");
   await mkdir(audioDir, { recursive: true });

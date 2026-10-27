@@ -26,8 +26,33 @@ export async function geminiText(
     systemInstruction: system,
     generationConfig: { maxOutputTokens, temperature: 0.9 },
   });
-  const result = await model.generateContent(parts);
-  return result.response.text().trim();
+  return withRetry(async () => {
+    const result = await model.generateContent(parts);
+    return result.response.text().trim();
+  });
+}
+
+/**
+ * Retry on rate-limit (429 / RESOURCE_EXHAUSTED) with exponential backoff.
+ * The free tier allows a limited number of requests per minute, so a run that
+ * makes many vision calls will brush the limit — this rides over it instead of
+ * crashing. Non-rate-limit errors throw immediately.
+ */
+async function withRetry<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
+  let delayMs = 3000;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const rateLimited = /429|quota|rate.?limit|RESOURCE_EXHAUSTED/i.test(msg);
+      if (!rateLimited || i === tries - 1) throw e;
+      console.log(`  (rate limited — waiting ${delayMs / 1000}s, retry ${i + 1}/${tries - 1})`);
+      await new Promise((r) => setTimeout(r, delayMs));
+      delayMs = Math.min(delayMs * 2, 60_000);
+    }
+  }
+  throw new Error("unreachable");
 }
 
 /** Wrap a base64 JPEG as a Gemini image part. */
