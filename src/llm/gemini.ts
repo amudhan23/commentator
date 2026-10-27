@@ -7,7 +7,10 @@ import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 // Swap the model with GEMINI_MODEL in .env if you like.
 // ─────────────────────────────────────────────────────────────────────────
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+// gemini-2.5-flash: mature, multimodal, cheap, and far less likely to be
+// overloaded than the newest preview models. Override with GEMINI_MODEL.
+// Run `npm run models` to see what your key can use.
+const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 function client(): GoogleGenerativeAI {
   const key = process.env.GEMINI_API_KEY;
