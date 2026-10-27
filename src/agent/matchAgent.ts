@@ -44,7 +44,7 @@ export class MatchAgent {
       `Answer in ${language}.`,
     ].join(" ");
 
-    return geminiText(system, [`Observed timeline so far:\n${timeline}\n\nQuestion: ${question}`], 250);
+    return geminiText(system, [`Observed timeline so far:\n${timeline}\n\nQuestion: ${question}`], 1024);
   }
 }
 

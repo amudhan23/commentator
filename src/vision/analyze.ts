@@ -36,7 +36,7 @@ export async function analyzePlay(frames: Frame[]): Promise<PlayAnalysis> {
     'Return JSON: {"description": string, "eventType": string, "significance": number, "onScreen": string}';
 
   const parts = [prompt, ...frames.map((f) => imagePart(f.b64))];
-  const text = await geminiText(SYSTEM, parts, 300);
+  const text = await geminiText(SYSTEM, parts, 2048);
   return parseAnalysis(text);
 }
 
