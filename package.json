@@ -1,0 +1,23 @@
+{
+  "name": "match-commentator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Live AI commentary over a muted match. Detection engine isolated for a future Rust swap.",
+  "scripts": {
+    "llm": "tsx --env-file=.env src/scripts/01-llm.ts",
+    "voice": "tsx --env-file=.env src/scripts/02-voice.ts",
+    "detect": "tsx --env-file=.env src/scripts/03-detect-spike.ts",
+    "demo": "tsx --env-file=.env src/index.ts",
+    "track": "tsx --env-file=.env src/pipeline.ts",
+    "serve": "tsx serve.ts"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

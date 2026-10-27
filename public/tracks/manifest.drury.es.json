@@ -1,0 +1,57 @@
+{
+  "video": null,
+  "persona": "drury",
+  "langSlug": "es",
+  "bcp47": "es-ES",
+  "generatedAt": "2026-10-27T21:07:52.996Z",
+  "events": [
+    {
+      "t": 12,
+      "text": "¡Ahí está! ¡La carrera, el remate, abajo al rincón, y el estadio estalla!",
+      "saw": "A midfielder plays a through ball; the striker runs onto it and finishes low into the bottom-left corner.",
+      "eventType": "goal",
+      "significance": 0.95,
+      "audio": null
+    },
+    {
+      "t": 47,
+      "text": "¡Por la derecha, supera a uno, a dos, centro raso y despejan en el primer palo!",
+      "saw": "A winger beats two defenders down the right and whips a cross that's cleared at the near post.",
+      "eventType": "chance",
+      "significance": 0.55,
+      "audio": null
+    },
+    {
+      "t": 78,
+      "text": "¡ATAJADA! ¡Una mano voladora la saca — increíble!",
+      "saw": "A long-range strike is tipped over the crossbar by the diving goalkeeper.",
+      "eventType": "save",
+      "significance": 0.7,
+      "audio": null
+    },
+    {
+      "t": 123,
+      "text": "¡Salta más que nadie y la manda al techo de la red!",
+      "saw": "From a corner, an attacker rises highest and heads it into the roof of the net.",
+      "eventType": "goal",
+      "significance": 0.95,
+      "audio": null
+    },
+    {
+      "t": 164,
+      "text": "¡El uno-dos, el disparo, y se marcha rozando el palo lejano!",
+      "saw": "A one-two at the edge of the box ends with a shot dragged just wide of the far post.",
+      "eventType": "chance",
+      "significance": 0.55,
+      "audio": null
+    },
+    {
+      "t": 201,
+      "text": "¡Al contragolpe, con una frialdad total, la rosca al ángulo — sublime!",
+      "saw": "A quick counter finishes with a curled shot into the top-right corner past the keeper.",
+      "eventType": "goal",
+      "significance": 0.95,
+      "audio": null
+    }
+  ]
+}

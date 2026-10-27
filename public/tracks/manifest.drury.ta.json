@@ -1,0 +1,57 @@
+{
+  "video": null,
+  "persona": "drury",
+  "langSlug": "ta",
+  "bcp47": "ta-IN",
+  "generatedAt": "2026-10-27T21:07:52.995Z",
+  "events": [
+    {
+      "t": 12,
+      "text": "அதோ போனது! ஓட்டம், அந்த அடி — மூலையில்! மைதானம் அதிர்கிறது!",
+      "saw": "A midfielder plays a through ball; the striker runs onto it and finishes low into the bottom-left corner.",
+      "eventType": "goal",
+      "significance": 0.95,
+      "audio": null
+    },
+    {
+      "t": 47,
+      "text": "வலது பக்கமாக, இருவரை கடந்து — குறுக்கே, அருகில் தடுக்கப்பட்டது!",
+      "saw": "A winger beats two defenders down the right and whips a cross that's cleared at the near post.",
+      "eventType": "chance",
+      "significance": 0.55,
+      "audio": null
+    },
+    {
+      "t": 78,
+      "text": "ஆஹா, காப்பாற்றினார்! பறக்கும் கை அதை மேலே தட்டியது!",
+      "saw": "A long-range strike is tipped over the crossbar by the diving goalkeeper.",
+      "eventType": "save",
+      "significance": 0.7,
+      "audio": null
+    },
+    {
+      "t": 123,
+      "text": "எல்லோருக்கும் மேலே எழுந்து, வலையின் கூரையில் தலையால் அடிக்கிறார்!",
+      "saw": "From a corner, an attacker rises highest and heads it into the roof of the net.",
+      "eventType": "goal",
+      "significance": 0.95,
+      "audio": null
+    },
+    {
+      "t": 164,
+      "text": "ஒன்று-இரண்டு விளையாட்டு, அந்த அடி — தூரத் தூணைத் தொட்டு வெளியே!",
+      "saw": "A one-two at the edge of the box ends with a shot dragged just wide of the far post.",
+      "eventType": "chance",
+      "significance": 0.55,
+      "audio": null
+    },
+    {
+      "t": 201,
+      "text": "எதிர்த் தாக்குதல், அமைதியாக, மேல் மூலையில் வளைத்து அடித்தார் — அபாரம்!",
+      "saw": "A quick counter finishes with a curled shot into the top-right corner past the keeper.",
+      "eventType": "goal",
+      "significance": 0.95,
+      "audio": null
+    }
+  ]
+}

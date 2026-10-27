@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Commentator — the match, called your way</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #0b0e13;
+    --surface: #151b24;
+    --surface-2: #1c2533;
+    --line: #2a3442;
+    --text: #eef2f7;
+    --muted: #8d9bac;
+    --flood: #ffb020;      /* floodlight amber — scoreboard LED */
+    --ai: #49a7ff;          /* the agent's voice */
+    --live: #ff4747;
+    --good: #45d98a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--ink); color: var(--text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+
+  /* ---- top broadcast bar ---- */
+  .bar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 22px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #11161f, var(--ink));
+  }
+  .wordmark {
+    font-family: Oswald, sans-serif; font-weight: 700; font-size: 22px;
+    letter-spacing: 1.5px; color: var(--text);
+  }
+  .wordmark b { color: var(--flood); font-weight: 700; }
+  .bar .sub { color: var(--muted); font-size: 13px; max-width: 46ch; }
+  .live {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
+    font-family: Oswald, sans-serif; font-weight: 600; letter-spacing: 2px;
+    font-size: 13px; color: var(--live);
+  }
+  .live .pip { width: 9px; height: 9px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 0 rgba(255,71,71,.6); animation: beat 1.3s infinite; }
+  @keyframes beat { 0%{box-shadow:0 0 0 0 rgba(255,71,71,.55)} 70%{box-shadow:0 0 0 7px rgba(255,71,71,0)} 100%{box-shadow:0 0 0 0 rgba(255,71,71,0)} }
+
+  .page { max-width: 1120px; margin: 0 auto; padding: 22px; }
+
+  /* ---- the stage ---- */
+  .stage { position: relative; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid var(--line); }
+  video { width: 100%; display: block; background: #000; }
+  .empty {
+    aspect-ratio: 16 / 9; display: flex; flex-direction: column; gap: 10px;
+    align-items: center; justify-content: center; text-align: center; padding: 28px;
+    color: var(--muted);
+  }
+  .empty .big { font-family: Oswald, sans-serif; font-weight: 600; font-size: 26px; color: var(--text); letter-spacing: .5px; }
+
+  /* broadcast lower-third caption = the hero of the experience */
+  .third {
+    position: absolute; left: 18px; right: 18px; bottom: 18px;
+    display: flex; align-items: stretch; gap: 0;
+    opacity: 0; transform: translateY(10px); transition: opacity .3s, transform .3s; pointer-events: none;
+  }
+  .third.show { opacity: 1; transform: none; }
+  .third .flag {
+    background: var(--flood); color: #241a00; font-family: Oswald, sans-serif;
+    font-weight: 700; letter-spacing: .5px; font-size: 13px;
+    padding: 0 14px; display: flex; align-items: center; border-radius: 10px 0 0 10px;
+    white-space: nowrap;
+  }
+  .third .say {
+    background: rgba(10,13,18,.92); backdrop-filter: blur(6px);
+    padding: 14px 18px; border-radius: 0 10px 10px 0; font-size: 21px; font-weight: 600;
+    line-height: 1.3; flex: 1;
+  }
+  .mode {
+    position: absolute; top: 14px; left: 14px; display: none; align-items: center; gap: 8px;
+    font-family: Oswald, sans-serif; letter-spacing: 1.5px; font-size: 12px; font-weight: 600;
+    padding: 6px 11px; border-radius: 999px; background: rgba(10,13,18,.75);
+  }
+  .mode.on { display: inline-flex; }
+  .mode .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--ai); }
+  .mode.broadcast .pip { background: var(--live); }
+
+  /* ---- controls ---- */
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 18px 0 6px; }
+  .ctl { display: flex; flex-direction: column; gap: 6px; }
+  .ctl span { font-size: 12px; color: var(--muted); }
+  select, .pick {
+    background: var(--surface); color: var(--text); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 13px; font: inherit; font-size: 14px; cursor: pointer;
+  }
+  select:hover, .pick:hover { border-color: var(--flood); }
+  .pick { display: inline-flex; align-items: center; gap: 8px; }
+  .switch { display: inline-flex; align-items: center; gap: 9px; padding: 10px 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 14px; }
+  .switch input { accent-color: var(--live); width: 16px; height: 16px; }
+
+  /* ---- two panels ---- */
+  .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-top: 22px; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+  .panel h2 {
+    font-family: Oswald, sans-serif; font-weight: 600; font-size: 17px; letter-spacing: .4px;
+    margin: 0 0 4px;
+  }
+  .panel p.note { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+
+  /* moment cards — show what the agent SAW vs what it SAID */
+  .moment {
+    border: 1px solid var(--line); border-left: 3px solid var(--line);
+    border-radius: 12px; padding: 13px 15px; margin-bottom: 11px; background: var(--surface);
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .moment:hover { background: var(--surface-2); }
+  .moment.active { border-left-color: var(--flood); background: var(--surface-2); }
+  .moment .head { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .moment .time { font-family: Oswald, sans-serif; font-weight: 600; color: var(--flood); font-variant-numeric: tabular-nums; }
+  .chip { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: #223; color: var(--muted); border: 1px solid var(--line); text-transform: capitalize; }
+  .chip.goal { background: rgba(69,217,138,.14); color: var(--good); border-color: transparent; }
+  .chip.save, .chip.chance { background: rgba(255,176,32,.14); color: var(--flood); border-color: transparent; }
+  .moment .saw { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+  .moment .saw b { color: var(--text); font-weight: 600; }
+  .moment .said { font-size: 15px; font-weight: 500; margin: 0; }
+
+  /* ask the agent */
+  .ask { display: flex; gap: 9px; margin-bottom: 14px; }
+  .ask input { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; color: var(--text); font: inherit; }
+  .ask input:focus { outline: none; border-color: var(--ai); }
+  .ask button { background: var(--ai); color: #04203b; border: 0; border-radius: 10px; padding: 0 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  .ask button:disabled { opacity: .5; cursor: default; }
+  .qa { border-top: 1px solid var(--line); padding-top: 12px; }
+  .turn { margin-bottom: 14px; }
+  .turn .q { font-weight: 600; margin: 0 0 4px; }
+  .turn .a { color: #d7e0ea; margin: 0; }
+  .turn .a.think { color: var(--muted); font-style: italic; }
+  .suggest { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .suggest button { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .suggest button:hover { border-color: var(--ai); color: var(--text); }
+
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 28px; }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="wordmark">COMMEN<b>/</b>TATOR</div>
+    <div class="sub">Watch any match muted. The agent sees the play and calls it — your style, your language, live.</div>
+    <div class="live"><span class="pip"></span>LIVE</div>
+  </div>
+
+  <div class="page">
+    <div class="stage">
+      <div id="empty" class="empty">
+        <div class="big">Load a match to kick off</div>
+        <div>The agent watches the muted footage and commentates the moments as they happen.</div>
+      </div>
+      <video id="video" playsinline style="display:none"></video>
+      <div id="mode" class="mode"><span class="pip"></span><span id="modeText">AI commentary</span></div>
+      <div id="third" class="third">
+        <div class="flag" id="thirdFlag">LIVE</div>
+        <div class="say" id="thirdSay"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl"><span>Match clip</span>
+        <label class="pick">Choose video<input id="file" type="file" accept="video/*" hidden /></label>
+      </div>
+      <div class="ctl"><span>Style</span>
+        <select id="persona">
+          <option value="drury">Epic play-by-play</option>
+          <option value="analyst">Tactical analyst</option>
+          <option value="neutral">Neutral</option>
+        </select>
+      </div>
+      <div class="ctl"><span>Language</span>
+        <select id="lang">
+          <option value="en">English</option>
+          <option value="ta">Tamil</option>
+          <option value="hi">Hindi</option>
+          <option value="es">Spanish</option>
+          <option value="pt">Portuguese</option>
+        </select>
+      </div>
+      <label class="switch"><input id="unmute" type="checkbox" /> Unmute the real broadcast on big moments</label>
+    </div>
+    <p id="status" class="note" style="color:var(--muted);font-size:13px;margin:4px 0 0"></p>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>What the agent sees</h2>
+        <p class="note">Each moment: what it actually watched, then how it called it. Tap one to jump there.</p>
+        <div id="moments"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Ask the agent</h2>
+        <p class="note">It answers from what it has watched so far — not the box score.</p>
+        <div class="ask">
+          <input id="q" placeholder="e.g. What was the best chance?" />
+          <button id="send">Ask</button>
+        </div>
+        <div class="suggest" id="suggest"></div>
+        <div id="qa" class="qa"></div>
+      </section>
+    </div>
+
+    <footer>Real-time detection runs the core; commentary is grounded in what the agent actually watched. Demo build.</footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
