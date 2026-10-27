@@ -11,6 +11,7 @@
     "demo": "tsx --env-file=.env src/index.ts",
     "track": "tsx --env-file=.env src/pipeline.ts",
     "models": "tsx --env-file=.env src/scripts/list-models.ts",
+    "try": "tsx --env-file=.env src/scripts/try-models.ts",
     "serve": "tsx serve.ts"
   },
   "dependencies": {
