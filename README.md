@@ -89,9 +89,11 @@ npm run serve      # http://localhost:5173
 
 Three sections:
 
-- **Studio** — upload a match clip, pick a commentator and language, hit
-  Generate. The agent watches it and writes the commentary, with **live
-  progress** streaming in as each moment is called. Needs a Gemini key.
+- **Studio** — upload a match clip, pick the **sport** (cricket, football, or
+  auto-detect), a commentator and a language (incl. Hindi, Tamil, Telugu,
+  Bengali, Marathi, Kannada, Malayalam and more), hit Generate. The agent
+  watches it and writes the commentary, with **live progress** streaming in as
+  each moment is called. Needs a Gemini key.
 - **Watch** — pick a generated track and watch the match called your way.
   Captions + voice fire in sync, you can **switch commentator or language**,
   **unmute the real broadcast** on the big moments, see **what the agent

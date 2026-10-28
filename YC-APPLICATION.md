@@ -121,17 +121,22 @@ people, not a broadcaster feature.
 
 Model: freemium consumer subscription + a creator revenue-share later.
 
-Bottom-up, conservative, India beachhead:
-- ~600M cricket/football fans in India who watch streams; target regional-language
-  speakers underserved today — call the reachable near-term market tens of millions.
-- Capture a small early slice — **1M paying fans** — at **$2–3/month** (priced for the
-  market) = **$24–36M ARR** from the beachhead alone, before any other country, sport,
-  or the creator marketplace.
+Bottom-up, conservative, India beachhead (real numbers, IPL 2025):
+- The IPL alone drew **620M unique viewers**; **390M watched digitally** (63% of all
+  viewing, growing ~14% YoY). Regional-language demand is surging — IPL 2026 YoY reach:
+  **Kannada +30%, Telugu +23%, Tamil +12%**, and regional feeds' share of digital
+  watch-time up **33%**. The pull is real and accelerating.
+- Today that demand is met by **160+ human commentators across 12 languages** — hand-
+  produced, so only the biggest matches and languages get covered. That cost structure
+  is exactly what we remove.
+- Bottom-up revenue: of the ~390M digital viewers, capture a small early slice —
+  **1M paying fans** — at **$2–3/month** (priced for the market) = **$24–36M ARR** from
+  the beachhead alone, before any other sport, country, or the creator marketplace.
 - Cost to serve is per-match-per-language (pennies per match, amortized across all
   viewers of that variant), so gross margins are high.
 
-(We'll refine with real numbers from the first cohort — this is the bottom-up frame,
-not a top-down "1% of a $X billion TAM" claim.)
+(This is the bottom-up frame — users × price — not a top-down "1% of a $X TAM" claim.
+We'll replace it with real numbers from the first cohort of fans.)
 
 ---
 
@@ -172,11 +177,14 @@ bureaucratic process faster than everyone, got access/ء a resource you weren't
 
 ## Why now?
 
-Multimodal models can finally watch live video with low enough latency and cost to
-narrate it in real time — that was impossible 18 months ago. At the same time,
-muted/second-screen viewing is now the default, and streaming has unbundled sport
-from the single broadcast feed. The missing piece was an agent that understands the
-match; that just became buildable.
+Three things just converged. (1) Multimodal models can finally *watch* live video with
+low enough latency and cost to narrate it in real time — impossible 18 months ago.
+(2) Sport has gone digital-first (63% of IPL 2025 viewing was streaming), which unbundles
+it from the single TV feed. (3) Regional-language demand is exploding (regional IPL
+watch-time share +33% YoY) but it's capped by the cost of human commentary — 160+
+commentators across just 12 languages. The demand is proven and growing; the supply is
+the bottleneck; and the thing that removes the bottleneck — an agent that understands the
+match — just became buildable.
 
 ---
 
@@ -210,3 +218,15 @@ match; that just became buildable.
 - [ ] Deploy the demo; paste the live URL.
 - [ ] 1-min video: all on camera, under 90s, no demo/screencast.
 - [ ] Proofread. Working links. (Professionalism axis.)
+
+---
+
+## Market evidence (sources for the figures above)
+
+- IPL 2025: 620M unique viewers, 390M digital (63%), +14% digital YoY —
+  cricmind.ai/news/ipl-broadcast-rights-viewership-numbers-2025
+- Regional-language IPL growth (Kannada +30%, Telugu +23%, Tamil +12%; regional
+  watch-time share +33%; 160+ commentators across 12 languages) —
+  ardorcomm-media.com (JioStar regional-language IPL viewing)
+- YC RFS "AI-Powered Consumer Products for 1 Billion People" — ycombinator.com/rfs
+- Sports-AI comparables (all B2B): SportAI ($1.8M seed), Owl AI ($11M), Reely, WSC Sports.
