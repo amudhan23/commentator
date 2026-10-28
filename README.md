@@ -29,15 +29,17 @@ moat and your migration path.
 
 ```
 src/
-  engine/        ← detection (the moat; future: a Rust service)
-  vision/        ← frames.ts (ffmpeg) + analyze.ts (the agent's eyes)
-  commentary/    ← grounded narration: persona + language (a LAYER)
+  engine/        ← audio moment detection (the moat; future: a Rust service)
+  vision/        ← frames.ts (ffmpeg) + narrate.ts (watch + call, one vision pass)
+  llm/           ← gemini.ts (one wrapper: model, retries, rate-limit backoff)
+  commentary/    ← personas (built-in + custom commentators) + languages
   agent/         ← match memory + ask-the-agent Q&A
-  voice/         ← ElevenLabs text→speech + playback (a LAYER)
-  scripts/       ← the three day-1 "kill the fear" scripts
-  pipeline.ts    ← clip → synced, grounded commentary track
-serve.ts         ← the demo server + /api/ask
-public/          ← the web UI
+  voice/         ← ElevenLabs text→speech (per-commentator voice) + playback
+  scripts/       ← day-1 scripts + model helpers (models / try)
+  pipeline.ts    ← clip → synced, grounded commentary track (+ progress events)
+serve.ts         ← app server: static UI + clips/tracks/personas/upload/process/ask
+public/          ← the web app (Watch / Studio / Commentators)
+data/            ← custom commentators (created in the UI; gitignored)
 ```
 
 ## Setup (10 minutes)
@@ -49,8 +51,12 @@ public/          ← the web UI
 3. **Keys:** `cp .env.example .env`, then paste your **free** Gemini key
    (get one at [aistudio.google.com](https://aistudio.google.com) → "Get API key").
    ElevenLabs is optional — without it the demo uses the free browser voice.
-4. **A clip:** drop a short muted-or-not match clip at `src/clips/match.mp4`
-   (a 2–3 min clip with a goal or two is perfect for testing).
+4. **Run it:** `npm run serve` → open http://localhost:5173 → **Studio** →
+   upload a short clip (a 2–4 min clip with a goal or two is perfect) → Generate.
+
+> Free-tier note: Gemini's free tier allows ~20 requests/day per model, and each
+> moment is one call. Keep "Moments" low while testing, or enable billing (a few
+> dollars) to lift the daily cap.
 
 ## Day 1 — three scripts, three concepts (one afternoon)
 
@@ -75,32 +81,38 @@ npm run demo -- ./src/clips/match.mp4 drury
 Detects each moment, writes a line in the chosen persona, and speaks it in the
 terminal. Good for a quick check.
 
-## The real demo — the web UI
-
-This is what you record for YC/Speedrun. It plays a muted clip and fires
-commentary in sync, with live **style** and **language** switching and an
-**auto-unmute** mode.
+## The app — what you actually run and record
 
 ```bash
 npm run serve      # http://localhost:5173
 ```
 
-Open it, pick a match clip, press play. **It works with zero API keys** — the
-bundled sample tracks use your browser's built-in voice. Switch language to
-Tamil/Spanish and watch the same moment get re-narrated.
+Three sections:
 
-### Generating real tracks (broadcast-quality voice)
+- **Studio** — upload a match clip, pick a commentator and language, hit
+  Generate. The agent watches it and writes the commentary, with **live
+  progress** streaming in as each moment is called. Needs a Gemini key.
+- **Watch** — pick a generated track and watch the match called your way.
+  Captions + voice fire in sync, you can **switch commentator or language**,
+  **unmute the real broadcast** on the big moments, see **what the agent
+  watched** per moment, and **ask the agent** questions about the match.
+- **Commentators** — your roster of voices (built-in + custom). **Create your
+  own commentator** (a style + an ElevenLabs voice) — the bring-your-own-
+  commentator marketplace seed.
 
-With your keys in `.env`, build a synced track for a specific clip, style, and
-language. It detects the moments, writes the lines, synthesizes ElevenLabs
-audio, and drops a manifest the UI picks up automatically:
+**Zero-key mode:** without any keys, Watch still works on the bundled sample
+tracks using your browser's built-in voice — good for a first look. Generating
+new commentary and asking the agent need a (free) Gemini key.
+
+### CLI (optional)
+
+You can also generate a track from the terminal:
 
 ```bash
-npm run track -- ./src/clips/match.mp4 drury ta     # epic, Tamil
-npm run track -- ./src/clips/match.mp4 analyst en    # analyst, English
+npm run track -- <clip.mp4> <commentator> <lang>   # e.g. ... drury ta
+npm run models                                      # list models your key can use
+npm run try                                         # probe which models actually work
 ```
-
-Then `npm run serve` and switch to that style/language in the UI.
 
 See **DEMO.md** for the 60-second recording script.
 
