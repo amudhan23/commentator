@@ -87,7 +87,12 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
 
   // ---- GET /api/personas ----
   if (req.method === "GET" && url === "/api/personas") {
-    return json(res, 200, { personas: await listPersonas(), languages: LANGUAGES });
+    return json(res, 200, {
+      personas: await listPersonas(),
+      languages: LANGUAGES,
+      canGenerate: !!process.env.GEMINI_API_KEY,
+      studioVoice: !!process.env.ELEVENLABS_API_KEY,
+    });
   }
 
   // ---- POST /api/personas ----

@@ -9,207 +9,225 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --ink: #0b0e13;
-    --surface: #151b24;
-    --surface-2: #1c2533;
-    --line: #2a3442;
-    --text: #eef2f7;
-    --muted: #8d9bac;
-    --flood: #ffb020;      /* floodlight amber — scoreboard LED */
-    --ai: #49a7ff;          /* the agent's voice */
-    --live: #ff4747;
-    --good: #45d98a;
+    --ink:#0b0e13; --surface:#151b24; --surface-2:#1c2533; --line:#2a3442;
+    --text:#eef2f7; --muted:#8d9bac; --flood:#ffb020; --ai:#49a7ff;
+    --live:#ff4747; --good:#45d98a; --violet:#9b6bff;
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; }
-  body {
-    background: var(--ink); color: var(--text);
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: inherit; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  body { background:var(--ink); color:var(--text); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased; }
+  button { font-family:inherit; cursor:pointer; }
+  .mono-num { font-variant-numeric:tabular-nums; }
 
-  /* ---- top broadcast bar ---- */
-  .bar {
-    display: flex; align-items: center; gap: 16px;
-    padding: 14px 22px; border-bottom: 1px solid var(--line);
-    background: linear-gradient(180deg, #11161f, var(--ink));
-  }
-  .wordmark {
-    font-family: Oswald, sans-serif; font-weight: 700; font-size: 22px;
-    letter-spacing: 1.5px; color: var(--text);
-  }
-  .wordmark b { color: var(--flood); font-weight: 700; }
-  .bar .sub { color: var(--muted); font-size: 13px; max-width: 46ch; }
-  .live {
-    margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
-    font-family: Oswald, sans-serif; font-weight: 600; letter-spacing: 2px;
-    font-size: 13px; color: var(--live);
-  }
-  .live .pip { width: 9px; height: 9px; border-radius: 50%; background: var(--live); box-shadow: 0 0 0 0 rgba(255,71,71,.6); animation: beat 1.3s infinite; }
-  @keyframes beat { 0%{box-shadow:0 0 0 0 rgba(255,71,71,.55)} 70%{box-shadow:0 0 0 7px rgba(255,71,71,0)} 100%{box-shadow:0 0 0 0 rgba(255,71,71,0)} }
+  /* top bar */
+  .bar { display:flex; align-items:center; gap:22px; padding:14px 22px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#11161f,var(--ink)); position:sticky; top:0; z-index:20; }
+  .wordmark { font-family:Oswald,sans-serif; font-weight:700; font-size:21px; letter-spacing:1.5px; }
+  .wordmark b { color:var(--flood); }
+  nav { display:flex; gap:6px; }
+  nav button { background:transparent; border:0; color:var(--muted); font-size:14px; font-weight:500; padding:8px 14px; border-radius:9px; }
+  nav button:hover { color:var(--text); }
+  nav button.active { color:var(--ink); background:var(--flood); font-weight:600; }
+  .status { margin-left:auto; display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); }
+  .status .dot { width:8px; height:8px; border-radius:50%; background:var(--good); }
+  .status .dot.off { background:var(--muted); }
 
-  .page { max-width: 1120px; margin: 0 auto; padding: 22px; }
+  .page { max-width:1080px; margin:0 auto; padding:24px 22px 60px; }
+  .view { display:none; }
+  .view.active { display:block; }
 
-  /* ---- the stage ---- */
-  .stage { position: relative; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid var(--line); }
-  video { width: 100%; display: block; background: #000; }
-  .empty {
-    aspect-ratio: 16 / 9; display: flex; flex-direction: column; gap: 10px;
-    align-items: center; justify-content: center; text-align: center; padding: 28px;
-    color: var(--muted);
-  }
-  .empty .big { font-family: Oswald, sans-serif; font-weight: 600; font-size: 26px; color: var(--text); letter-spacing: .5px; }
+  h1.title { font-family:Oswald,sans-serif; font-weight:600; font-size:26px; letter-spacing:.3px; margin:0 0 4px; }
+  p.lead { color:var(--muted); margin:0 0 22px; max-width:62ch; }
+  h2.sec { font-family:Oswald,sans-serif; font-weight:600; font-size:17px; letter-spacing:.3px; margin:0 0 12px; }
 
-  /* broadcast lower-third caption = the hero of the experience */
-  .third {
-    position: absolute; left: 18px; right: 18px; bottom: 18px;
-    display: flex; align-items: stretch; gap: 0;
-    opacity: 0; transform: translateY(10px); transition: opacity .3s, transform .3s; pointer-events: none;
-  }
-  .third.show { opacity: 1; transform: none; }
-  .third .flag {
-    background: var(--flood); color: #241a00; font-family: Oswald, sans-serif;
-    font-weight: 700; letter-spacing: .5px; font-size: 13px;
-    padding: 0 14px; display: flex; align-items: center; border-radius: 10px 0 0 10px;
-    white-space: nowrap;
-  }
-  .third .say {
-    background: rgba(10,13,18,.92); backdrop-filter: blur(6px);
-    padding: 14px 18px; border-radius: 0 10px 10px 0; font-size: 21px; font-weight: 600;
-    line-height: 1.3; flex: 1;
-  }
-  .mode {
-    position: absolute; top: 14px; left: 14px; display: none; align-items: center; gap: 8px;
-    font-family: Oswald, sans-serif; letter-spacing: 1.5px; font-size: 12px; font-weight: 600;
-    padding: 6px 11px; border-radius: 999px; background: rgba(10,13,18,.75);
-  }
-  .mode.on { display: inline-flex; }
-  .mode .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--ai); }
-  .mode.broadcast .pip { background: var(--live); }
+  /* stage / player */
+  .stage { position:relative; border-radius:14px; overflow:hidden; background:#000; border:1px solid var(--line); }
+  video { width:100%; display:block; background:#000; }
+  .empty { aspect-ratio:16/9; display:flex; flex-direction:column; gap:10px; align-items:center; justify-content:center; text-align:center; padding:28px; color:var(--muted); }
+  .empty .big { font-family:Oswald,sans-serif; font-weight:600; font-size:24px; color:var(--text); }
+  .empty label.pick { margin-top:6px; }
+  .third { position:absolute; left:18px; right:18px; bottom:18px; display:flex; opacity:0; transform:translateY(10px); transition:opacity .3s,transform .3s; pointer-events:none; }
+  .third.show { opacity:1; transform:none; }
+  .third .flag { background:var(--flood); color:#241a00; font-family:Oswald,sans-serif; font-weight:700; letter-spacing:.5px; font-size:13px; padding:0 14px; display:flex; align-items:center; border-radius:10px 0 0 10px; white-space:nowrap; }
+  .third .say { background:rgba(10,13,18,.92); padding:14px 18px; border-radius:0 10px 10px 0; font-size:21px; font-weight:600; line-height:1.3; flex:1; }
+  .mode { position:absolute; top:14px; left:14px; display:none; align-items:center; gap:8px; font-family:Oswald,sans-serif; letter-spacing:1.5px; font-size:12px; font-weight:600; padding:6px 11px; border-radius:999px; background:rgba(10,13,18,.75); }
+  .mode.on { display:inline-flex; }
+  .mode .pip { width:8px; height:8px; border-radius:50%; background:var(--ai); }
+  .mode.broadcast .pip { background:var(--live); }
 
-  /* ---- controls ---- */
-  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 18px 0 6px; }
-  .ctl { display: flex; flex-direction: column; gap: 6px; }
-  .ctl span { font-size: 12px; color: var(--muted); }
-  select, .pick {
-    background: var(--surface); color: var(--text); border: 1px solid var(--line);
-    border-radius: 10px; padding: 10px 13px; font: inherit; font-size: 14px; cursor: pointer;
-  }
-  select:hover, .pick:hover { border-color: var(--flood); }
-  .pick { display: inline-flex; align-items: center; gap: 8px; }
-  .switch { display: inline-flex; align-items: center; gap: 9px; padding: 10px 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 14px; }
-  .switch input { accent-color: var(--live); width: 16px; height: 16px; }
+  /* controls */
+  .row { display:flex; flex-wrap:wrap; gap:12px; align-items:end; }
+  .ctl { display:flex; flex-direction:column; gap:6px; }
+  .ctl span { font-size:12px; color:var(--muted); }
+  select, input[type=text], textarea { background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:10px 13px; font:inherit; font-size:14px; }
+  select:hover { border-color:var(--flood); }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--ai); }
+  .pick { display:inline-flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:14px; }
+  .pick:hover { border-color:var(--flood); }
+  .switch { display:inline-flex; align-items:center; gap:9px; padding:10px 13px; background:var(--surface); border:1px solid var(--line); border-radius:10px; font-size:14px; }
+  .switch input { accent-color:var(--live); width:16px; height:16px; }
+  .btn { background:var(--flood); color:#241a00; border:0; border-radius:10px; padding:11px 20px; font-weight:600; font-size:14px; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .btn.ghost { background:transparent; border:1px solid var(--line); color:var(--text); }
+  .btn.ai { background:var(--ai); color:#04203b; }
 
-  /* ---- two panels ---- */
-  .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-top: 22px; }
-  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
-  .panel h2 {
-    font-family: Oswald, sans-serif; font-weight: 600; font-size: 17px; letter-spacing: .4px;
-    margin: 0 0 4px;
-  }
-  .panel p.note { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  /* panels grid */
+  .grid { display:grid; grid-template-columns:1.35fr 1fr; gap:18px; margin-top:22px; }
+  @media (max-width:860px){ .grid { grid-template-columns:1fr; } }
+  .panel h3 { font-family:Oswald,sans-serif; font-weight:600; font-size:16px; margin:0 0 4px; }
+  .panel p.note { color:var(--muted); font-size:13px; margin:0 0 14px; }
 
-  /* moment cards — show what the agent SAW vs what it SAID */
-  .moment {
-    border: 1px solid var(--line); border-left: 3px solid var(--line);
-    border-radius: 12px; padding: 13px 15px; margin-bottom: 11px; background: var(--surface);
-    cursor: pointer; transition: border-color .15s, background .15s;
-  }
-  .moment:hover { background: var(--surface-2); }
-  .moment.active { border-left-color: var(--flood); background: var(--surface-2); }
-  .moment .head { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
-  .moment .time { font-family: Oswald, sans-serif; font-weight: 600; color: var(--flood); font-variant-numeric: tabular-nums; }
-  .chip { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: #223; color: var(--muted); border: 1px solid var(--line); text-transform: capitalize; }
-  .chip.goal { background: rgba(69,217,138,.14); color: var(--good); border-color: transparent; }
-  .chip.save, .chip.chance { background: rgba(255,176,32,.14); color: var(--flood); border-color: transparent; }
-  .moment .saw { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
-  .moment .saw b { color: var(--text); font-weight: 600; }
-  .moment .said { font-size: 15px; font-weight: 500; margin: 0; }
+  /* moment cards */
+  .moment { border:1px solid var(--line); border-left:3px solid var(--line); border-radius:12px; padding:12px 15px; margin-bottom:11px; background:var(--surface); transition:border-color .15s,background .15s; cursor:pointer; }
+  .moment:hover { background:var(--surface-2); }
+  .moment.active { border-left-color:var(--flood); background:var(--surface-2); }
+  .moment .head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .moment .time { font-family:Oswald,sans-serif; font-weight:600; color:var(--flood); }
+  .chip { font-size:11px; font-weight:600; padding:2px 9px; border-radius:999px; background:#223; color:var(--muted); border:1px solid var(--line); text-transform:capitalize; }
+  .chip.goal { background:rgba(69,217,138,.14); color:var(--good); border-color:transparent; }
+  .chip.save,.chip.chance { background:rgba(255,176,32,.14); color:var(--flood); border-color:transparent; }
+  .moment .saw { font-size:13px; color:var(--muted); margin:0 0 6px; }
+  .moment .saw b { color:var(--text); font-weight:600; }
+  .moment .said { font-size:15px; font-weight:500; margin:0; }
 
-  /* ask the agent */
-  .ask { display: flex; gap: 9px; margin-bottom: 14px; }
-  .ask input { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; color: var(--text); font: inherit; }
-  .ask input:focus { outline: none; border-color: var(--ai); }
-  .ask button { background: var(--ai); color: #04203b; border: 0; border-radius: 10px; padding: 0 18px; font: inherit; font-weight: 600; cursor: pointer; }
-  .ask button:disabled { opacity: .5; cursor: default; }
-  .qa { border-top: 1px solid var(--line); padding-top: 12px; }
-  .turn { margin-bottom: 14px; }
-  .turn .q { font-weight: 600; margin: 0 0 4px; }
-  .turn .a { color: #d7e0ea; margin: 0; }
-  .turn .a.think { color: var(--muted); font-style: italic; }
-  .suggest { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
-  .suggest button { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
-  .suggest button:hover { border-color: var(--ai); color: var(--text); }
+  /* ask */
+  .ask { display:flex; gap:9px; margin-bottom:14px; }
+  .ask input { flex:1; }
+  .suggest { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+  .suggest button { background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:999px; padding:6px 12px; font-size:13px; }
+  .suggest button:hover { border-color:var(--ai); color:var(--text); }
+  .qa { border-top:1px solid var(--line); padding-top:12px; }
+  .turn { margin-bottom:14px; }
+  .turn .q { font-weight:600; margin:0 0 4px; }
+  .turn .a { color:#d7e0ea; margin:0; }
+  .turn .a.think { color:var(--muted); font-style:italic; }
 
-  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 28px; }
+  /* cards grid (commentators, library) */
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+  .card { border:1px solid var(--line); border-top:3px solid var(--flood); border-radius:12px; padding:16px; background:var(--surface); }
+  .card .nm { font-family:Oswald,sans-serif; font-weight:600; font-size:17px; margin:0 0 3px; }
+  .card .tg { color:var(--muted); font-size:13px; margin:0 0 10px; min-height:34px; }
+  .card .meta { font-size:12px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
+  .card .badge { font-size:11px; padding:2px 8px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); }
+
+  /* studio progress */
+  .progress { margin-top:20px; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface); display:none; }
+  .progress.on { display:block; }
+  .progress .bar-wrap { height:6px; background:var(--surface-2); border-radius:999px; overflow:hidden; margin:10px 0 14px; }
+  .progress .bar-fill { height:100%; width:0; background:var(--flood); transition:width .4s; }
+  .feed { font-size:14px; }
+  .feed .line { padding:6px 0; border-bottom:1px solid #1b242e; display:flex; gap:10px; }
+  .feed .line .t { color:var(--flood); font-family:Oswald,sans-serif; min-width:46px; }
+  .feed .line.skip { color:var(--muted); }
+
+  .hr { height:1px; background:var(--line); margin:26px 0; border:0; }
+  .hint { color:var(--muted); font-size:13px; margin-top:12px; }
+  code { background:var(--surface-2); padding:1px 6px; border-radius:5px; font-size:13px; }
+  .hidden { display:none !important; }
+  form.create { display:grid; gap:12px; max-width:520px; }
+  form.create label { font-size:12px; color:var(--muted); display:block; margin-bottom:5px; }
+  form.create .full { grid-column:1/-1; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 </style>
 </head>
 <body>
   <div class="bar">
     <div class="wordmark">COMMEN<b>/</b>TATOR</div>
-    <div class="sub">Watch any match muted. The agent sees the play and calls it — your style, your language, live.</div>
-    <div class="live"><span class="pip"></span>LIVE</div>
+    <nav>
+      <button data-view="watch" class="active">Watch</button>
+      <button data-view="studio">Studio</button>
+      <button data-view="commentators">Commentators</button>
+    </nav>
+    <div class="status"><span id="genDot" class="dot off"></span><span id="statusText">checking…</span></div>
   </div>
 
   <div class="page">
-    <div class="stage">
-      <div id="empty" class="empty">
-        <div class="big">Load a match to kick off</div>
-        <div>The agent watches the muted footage and commentates the moments as they happen.</div>
-      </div>
-      <video id="video" playsinline style="display:none"></video>
-      <div id="mode" class="mode"><span class="pip"></span><span id="modeText">AI commentary</span></div>
-      <div id="third" class="third">
-        <div class="flag" id="thirdFlag">LIVE</div>
-        <div class="say" id="thirdSay"></div>
-      </div>
-    </div>
+    <!-- WATCH -->
+    <section id="view-watch" class="view active">
+      <h1 class="title">Watch</h1>
+      <p class="lead">Pick a generated track and watch the match called your way — switch the commentator or language on the fly, or let it unmute the real broadcast on the big moments.</p>
 
-    <div class="controls">
-      <div class="ctl"><span>Match clip</span>
-        <label class="pick">Choose video<input id="file" type="file" accept="video/*" hidden /></label>
-      </div>
-      <div class="ctl"><span>Style</span>
-        <select id="persona">
-          <option value="drury">Epic play-by-play</option>
-          <option value="analyst">Tactical analyst</option>
-          <option value="neutral">Neutral</option>
-        </select>
-      </div>
-      <div class="ctl"><span>Language</span>
-        <select id="lang">
-          <option value="en">English</option>
-          <option value="ta">Tamil</option>
-          <option value="hi">Hindi</option>
-          <option value="es">Spanish</option>
-          <option value="pt">Portuguese</option>
-        </select>
-      </div>
-      <label class="switch"><input id="unmute" type="checkbox" /> Unmute the real broadcast on big moments</label>
-    </div>
-    <p id="status" class="note" style="color:var(--muted);font-size:13px;margin:4px 0 0"></p>
-
-    <div class="grid">
-      <section class="panel">
-        <h2>What the agent sees</h2>
-        <p class="note">Each moment: what it actually watched, then how it called it. Tap one to jump there.</p>
-        <div id="moments"></div>
-      </section>
-
-      <section class="panel">
-        <h2>Ask the agent</h2>
-        <p class="note">It answers from what it has watched so far — not the box score.</p>
-        <div class="ask">
-          <input id="q" placeholder="e.g. What was the best chance?" />
-          <button id="send">Ask</button>
+      <div class="row" style="margin-bottom:16px">
+        <div class="ctl" style="min-width:260px">
+          <span>Track</span>
+          <select id="trackPick"><option value="">— no tracks yet —</option></select>
         </div>
-        <div class="suggest" id="suggest"></div>
-        <div id="qa" class="qa"></div>
-      </section>
-    </div>
+        <div class="ctl"><span>Style</span><select id="personaPick"></select></div>
+        <div class="ctl"><span>Language</span><select id="langPick"></select></div>
+        <label class="switch"><input id="unmute" type="checkbox" /> Unmute real broadcast on big moments</label>
+      </div>
 
-    <footer>Real-time detection runs the core; commentary is grounded in what the agent actually watched. Demo build.</footer>
+      <div class="stage">
+        <div id="empty" class="empty">
+          <div class="big">No track loaded</div>
+          <div id="emptyMsg">Generate one in the Studio, then come back to watch.</div>
+          <label class="pick" id="localPickWrap" style="display:none">Load the clip file<input id="localFile" type="file" accept="video/*" hidden /></label>
+        </div>
+        <video id="video" playsinline class="hidden"></video>
+        <div id="mode" class="mode"><span class="pip"></span><span id="modeText">AI commentary</span></div>
+        <div id="third" class="third"><div class="flag" id="thirdFlag">LIVE</div><div class="say" id="thirdSay"></div></div>
+      </div>
+      <p id="watchStatus" class="hint"></p>
+
+      <div class="grid">
+        <section class="panel">
+          <h3>What the agent sees</h3>
+          <p class="note">Each moment: what it actually watched, then how it called it. Tap one to jump there.</p>
+          <div id="moments"></div>
+        </section>
+        <section class="panel">
+          <h3>Ask the agent</h3>
+          <p class="note">It answers from what it watched — not the box score.</p>
+          <div class="ask"><input id="q" type="text" placeholder="e.g. What was the best chance?" /><button id="send" class="btn ai">Ask</button></div>
+          <div class="suggest" id="suggest"></div>
+          <div id="qa" class="qa"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- STUDIO -->
+    <section id="view-studio" class="view">
+      <h1 class="title">Studio</h1>
+      <p class="lead">Upload a match clip, choose a commentator and a language, and the agent watches it and writes the commentary — grounded in what actually happened on the pitch.</p>
+
+      <div class="row">
+        <div class="ctl" style="min-width:240px">
+          <span>Match clip</span>
+          <select id="clipPick"><option value="">— upload one —</option></select>
+        </div>
+        <label class="pick">Upload clip<input id="uploadFile" type="file" accept="video/*" hidden /></label>
+        <div class="ctl"><span>Commentator</span><select id="studioPersona"></select></div>
+        <div class="ctl"><span>Language</span><select id="studioLang"></select></div>
+        <div class="ctl"><span>Moments</span><select id="studioMax"><option>4</option><option selected>6</option><option>8</option><option>10</option></select></div>
+        <button id="generate" class="btn">Generate commentary</button>
+      </div>
+      <p class="hint" id="studioHint">Tip: a 2–4 minute clip with a goal or two is perfect. Each moment is one vision call.</p>
+
+      <div class="progress" id="progress">
+        <div class="row" style="justify-content:space-between"><h2 class="sec" style="margin:0" id="progTitle">Watching the match…</h2><span id="progCount" class="hint"></span></div>
+        <div class="bar-wrap"><div class="bar-fill" id="progBar"></div></div>
+        <div class="feed" id="feed"></div>
+        <div style="margin-top:14px"><button id="watchResult" class="btn hidden">Watch it →</button></div>
+      </div>
+    </section>
+
+    <!-- COMMENTATORS -->
+    <section id="view-commentators" class="view">
+      <h1 class="title">Commentators</h1>
+      <p class="lead">Your roster of voices. Use the built-ins, or create your own — a style and a voice. (The seed of a marketplace where any creator's voice can call any match.)</p>
+      <div class="cards" id="personaCards"></div>
+      <hr class="hr" />
+      <h2 class="sec">Create a commentator</h2>
+      <form class="create" id="createForm">
+        <div class="two">
+          <div><label>Name</label><input class="full" id="cName" type="text" placeholder="e.g. Barry Banter" style="width:100%" /></div>
+          <div><label>Accent color</label><input id="cAccent" type="text" placeholder="#9b6bff" style="width:100%" /></div>
+        </div>
+        <div><label>Tagline</label><input id="cTag" type="text" placeholder="cheeky pub commentator" style="width:100%" /></div>
+        <div><label>Style (how they commentate)</label><textarea id="cStyle" rows="3" placeholder="A cheeky British pub commentator — dry wit, deadpan one-liners, never over the top." style="width:100%"></textarea></div>
+        <div><label>Voice ID (ElevenLabs — optional)</label><input id="cVoice" type="text" placeholder="leave blank for a default voice" style="width:100%" /></div>
+        <div><button class="btn" type="submit">Create commentator</button> <span id="createMsg" class="hint"></span></div>
+      </form>
+    </section>
   </div>
 
   <script src="app.js"></script>
