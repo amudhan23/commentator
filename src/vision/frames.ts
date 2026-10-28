@@ -56,6 +56,18 @@ export async function extractBurst(
   return frames;
 }
 
+/** Grab a single poster frame (for gallery thumbnails) and write it as a jpg. */
+export async function extractPoster(videoPath: string, tSeconds: number, outPath: string): Promise<void> {
+  await runFfmpeg([
+    "-ss", String(Math.max(0, tSeconds)),
+    "-i", videoPath,
+    "-frames:v", "1",
+    "-vf", "scale=640:-1",
+    "-q:v", "3",
+    outPath,
+  ]);
+}
+
 function runFfmpeg(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const ff = spawn(FFMPEG, ["-y", "-loglevel", "error", ...args]);

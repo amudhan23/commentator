@@ -205,6 +205,23 @@
   footer.site .wm { font-family:Oswald,sans-serif; font-weight:700; letter-spacing:1.5px; color:var(--text); }
   footer.site .wm b { color:var(--flood); }
 
+  /* explore gallery */
+  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px; }
+  .gcard { border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface); display:flex; flex-direction:column; }
+  .gcard .thumb { aspect-ratio:16/9; background:#0a0f0a center/cover no-repeat; position:relative; border-bottom:1px solid var(--line); }
+  .gcard .thumb .pz { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .gcard .thumb .pz svg { width:46px; height:46px; opacity:.92; filter:drop-shadow(0 2px 8px rgba(0,0,0,.6)); }
+  .gcard .thumb .tag { position:absolute; left:10px; bottom:10px; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; background:rgba(8,11,16,.8); }
+  .gcard .body { padding:14px 15px; flex:1; display:flex; flex-direction:column; gap:4px; }
+  .gcard .body .nm { font-family:Oswald,sans-serif; font-weight:600; font-size:16px; margin:0; }
+  .gcard .body .mt { color:var(--muted); font-size:13px; margin:0; }
+  .gcard .acts { display:flex; gap:8px; padding:0 15px 14px; }
+  .gcard .acts button { flex:1; font-size:13px; padding:8px 10px; border-radius:9px; }
+  .gempty { color:var(--muted); border:1px dashed var(--line); border-radius:14px; padding:40px; text-align:center; grid-column:1/-1; }
+
+  .sharebtn { background:transparent; border:1px solid var(--line); color:var(--text); border-radius:9px; padding:9px 14px; font-size:13px; }
+  .sharebtn:hover { border-color:var(--flood); }
+
   @media (max-width:720px){
     .bar { gap:10px; padding:12px 14px; }
     .bar .status { display:none; }
@@ -223,6 +240,7 @@
     <div class="wordmark" style="cursor:pointer" onclick="window.__go&&window.__go('home')">COMMEN<b>/</b>TATOR</div>
     <nav>
       <button data-view="home" class="active">Home</button>
+      <button data-view="explore">Explore</button>
       <button data-view="watch">Watch</button>
       <button data-view="studio">Studio</button>
       <button data-view="commentators">Commentators</button>
@@ -299,6 +317,15 @@
   </section>
 
   <div class="page">
+    <!-- EXPLORE -->
+    <section id="view-explore" class="view">
+      <div class="row" style="justify-content:space-between;align-items:baseline">
+        <div><h1 class="title">Explore</h1><p class="lead" style="margin-bottom:0">Matches called by the community. Watch any of them — or make your own in the Studio.</p></div>
+        <button class="btn" onclick="window.__go&&window.__go('studio')">Call a match →</button>
+      </div>
+      <div class="gallery" id="gallery" style="margin-top:22px"></div>
+    </section>
+
     <!-- WATCH -->
     <section id="view-watch" class="view">
       <h1 class="title">Watch</h1>
@@ -312,6 +339,7 @@
         <div class="ctl"><span>Style</span><select id="personaPick"></select></div>
         <div class="ctl"><span>Language</span><select id="langPick"></select></div>
         <label class="switch"><input id="unmute" type="checkbox" /> Unmute real broadcast on big moments</label>
+        <button id="shareBtn" class="sharebtn">Share this match</button>
       </div>
 
       <div class="stage">
@@ -388,6 +416,7 @@
     </section>
   </div>
 
+  <div id="toast" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--flood);color:#241a00;font-weight:600;padding:11px 20px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;z-index:50"></div>
   <script src="app.js"></script>
 </body>
 </html>

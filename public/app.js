@@ -25,7 +25,11 @@ async function boot() {
   wireStudio();
   wireCommentators();
   heroAnim();
+  $("shareBtn").onclick = shareCurrent;
   await refreshAll();
+  // deep link: /?t=<trackfile> opens that match in Watch
+  const t = new URLSearchParams(location.search).get("t");
+  if (t && state.tracks.some((x) => x.file === t)) { go("watch"); loadTrackByFile(t); }
 }
 
 async function refreshAll() {
@@ -43,6 +47,7 @@ async function refreshAll() {
   paintTrackList();
   paintClipList();
   paintPersonaCards();
+  paintGallery();
   // status pill
   $("genDot").className = "dot" + (state.canGenerate ? "" : " off");
   $("statusText").textContent = state.canGenerate
@@ -313,6 +318,48 @@ function wireCommentators() {
     await refreshAll();
   };
 }
+// ---------- EXPLORE gallery ----------
+const PLAY_SVG = '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="11" fill="rgba(8,11,16,.65)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>';
+function paintGallery() {
+  const box = $("gallery");
+  const shown = state.tracks.filter((t) => t.clip); // real generated matches
+  if (!shown.length) {
+    box.innerHTML = `<div class="gempty">No matches called yet. <b>Open the Studio</b>, upload a clip, and be the first.</div>`;
+    return;
+  }
+  box.innerHTML = shown.map((t) => {
+    const bg = t.thumb ? `style="background-image:url('${esc(t.thumb)}')"` : "";
+    return `<div class="gcard">
+      <div class="thumb" ${bg}>
+        <div class="pz">${PLAY_SVG}</div>
+        <span class="tag" style="color:${esc(t.accent)}">${esc(t.personaName)} · ${esc(t.langName)}</span>
+      </div>
+      <div class="body">
+        <p class="nm">${esc(prettyClip(t.clip))}</p>
+        <p class="mt">${t.moments} moments · called by ${esc(t.personaName)}</p>
+      </div>
+      <div class="acts">
+        <button class="btn" data-watch="${esc(t.file)}">Watch</button>
+        <button class="btn ghost" data-share="${esc(t.file)}">Share</button>
+      </div>
+    </div>`;
+  }).join("");
+  box.querySelectorAll("[data-watch]").forEach((b) => b.onclick = () => { go("watch"); loadTrackByFile(b.dataset.watch); });
+  box.querySelectorAll("[data-share]").forEach((b) => b.onclick = () => shareTrack(b.dataset.share));
+}
+function prettyClip(name) { return String(name || "").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+
+function shareCurrent() { if (state.manifestFile) shareTrack(state.manifestFile); else toast("Load a match first"); }
+function shareTrack(file) {
+  const url = `${location.origin}/?t=${encodeURIComponent(file)}`;
+  const done = () => toast("Link copied — share it anywhere");
+  if (navigator.share) { navigator.share({ title: "Commentator — watch this match", url }).catch(() => copy(url, done)); }
+  else copy(url, done);
+}
+function copy(text, cb) { navigator.clipboard?.writeText(text).then(cb).catch(() => { prompt("Copy this link:", text); }); }
+let toastT;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.opacity = "1"; t.style.transform = "translateX(-50%) translateY(0)"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; t.style.transform = "translateX(-50%) translateY(20px)"; }, 2200); }
+
 function paintPersonaCards() {
   $("personaCards").innerHTML = state.personas.map((p) => `
     <div class="card" style="border-top-color:${esc(p.accent || "#ffb020")}">
