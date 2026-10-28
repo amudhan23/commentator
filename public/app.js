@@ -24,6 +24,7 @@ async function boot() {
   wireWatch();
   wireStudio();
   wireCommentators();
+  heroAnim();
   await refreshAll();
 }
 
@@ -53,11 +54,7 @@ async function refreshAll() {
 // ---------- nav ----------
 function wireNav() {
   document.querySelectorAll("nav button").forEach((b) => {
-    b.onclick = () => {
-      document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("active", x === b));
-      document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
-      $("view-" + b.dataset.view).classList.add("active");
-    };
+    b.onclick = () => go(b.dataset.view);
   });
 }
 
@@ -65,6 +62,35 @@ function go(view) {
   document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("active", x.dataset.view === view));
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
   $("view-" + view).classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+window.__go = go;
+
+// hero caption animation — the product's magic, told in one loop
+function heroAnim() {
+  const say = $("heroSay"), flag = $("heroFlag");
+  if (!say) return;
+  const lines = [
+    { flag: "EPIC", text: "Oh, it's there! Low into the corner — and the ground ERUPTS!" },
+    { flag: "தமிழ்", text: "அடேயப்பா! என்ன ஒரு கோல்! மைதானமே அதிர்கிறது!" },
+    { flag: "ANALYST", text: "Clever run off the last shoulder, finished clean across the keeper." },
+    { flag: "ESPAÑOL", text: "¡GOOOL! ¡Al ángulo, imposible para el arquero!" },
+    { flag: "HYPE", text: "ARE YOU KIDDING?! He's buried it — limbs everywhere!" },
+  ];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let i = 0;
+  function show() {
+    const l = lines[i % lines.length];
+    flag.textContent = l.flag;
+    if (reduce) { say.textContent = l.text; i++; return setTimeout(show, 2800); }
+    let c = 0; say.textContent = "";
+    (function type() {
+      say.textContent = l.text.slice(0, c++);
+      if (c <= l.text.length) setTimeout(type, 26);
+      else { i++; setTimeout(show, 2400); }
+    })();
+  }
+  show();
 }
 
 // ---------- selects ----------
