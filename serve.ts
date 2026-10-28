@@ -58,6 +58,11 @@ const server = createServer(async (req, res) => {
 });
 
 async function api(req: IncomingMessage, res: ServerResponse, url: string) {
+  // ---- GET /api/health (for uptime checks / platforms) ----
+  if (req.method === "GET" && url === "/api/health") {
+    return json(res, 200, { ok: true, generate: !!process.env.GEMINI_API_KEY, time: new Date().toISOString() });
+  }
+
   // ---- GET /api/clips ----
   if (req.method === "GET" && url === "/api/clips") {
     await mkdir(CLIPS, { recursive: true });
@@ -171,10 +176,11 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
   return json(res, 404, { error: "unknown endpoint" });
 }
 
-server.listen(PORT, () => {
+const HOST = process.env.HOST || "0.0.0.0";
+server.listen(PORT, HOST, () => {
   const g = process.env.GEMINI_API_KEY ? "generate ON" : "generate off (no GEMINI key)";
   const v = process.env.ELEVENLABS_API_KEY ? "studio voice" : "browser voice";
-  console.log(`\n▶  Commentator at http://localhost:${PORT}   (${g}, ${v})\n`);
+  console.log(`\n▶  Commentator listening on ${HOST}:${PORT}   (${g}, ${v})\n`);
 });
 
 // ---- helpers ----
