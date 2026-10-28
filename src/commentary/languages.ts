@@ -10,10 +10,22 @@ export interface Lang {
 
 export const LANGUAGES: Lang[] = [
   { slug: "en", name: "English", bcp47: "en-US" },
-  { slug: "ta", name: "Tamil", bcp47: "ta-IN" },
+  // Indian languages — the beachhead: a billion fans underserved by the broadcast.
   { slug: "hi", name: "Hindi", bcp47: "hi-IN" },
+  { slug: "ta", name: "Tamil", bcp47: "ta-IN" },
+  { slug: "te", name: "Telugu", bcp47: "te-IN" },
+  { slug: "bn", name: "Bengali", bcp47: "bn-IN" },
+  { slug: "mr", name: "Marathi", bcp47: "mr-IN" },
+  { slug: "kn", name: "Kannada", bcp47: "kn-IN" },
+  { slug: "ml", name: "Malayalam", bcp47: "ml-IN" },
+  { slug: "gu", name: "Gujarati", bcp47: "gu-IN" },
+  { slug: "pa", name: "Punjabi", bcp47: "pa-IN" },
+  { slug: "ur", name: "Urdu", bcp47: "ur-PK" },
+  // Global
   { slug: "es", name: "Spanish", bcp47: "es-ES" },
   { slug: "pt", name: "Portuguese", bcp47: "pt-BR" },
+  { slug: "ar", name: "Arabic", bcp47: "ar-SA" },
+  { slug: "fr", name: "French", bcp47: "fr-FR" },
 ];
 
 export function langBySlug(slug: string): Lang {
