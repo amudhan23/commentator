@@ -26,6 +26,7 @@ async function boot() {
   wireCommentators();
   heroAnim();
   $("shareBtn").onclick = shareCurrent;
+  wireWaitlist();
   await refreshAll();
   // deep link: /?t=<trackfile> opens that match in Watch
   const t = new URLSearchParams(location.search).get("t");
@@ -318,6 +319,18 @@ function wireCommentators() {
     await refreshAll();
   };
 }
+// ---------- waitlist ----------
+function wireWaitlist() {
+  const form = $("waitForm"); if (!form) return;
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $("waitEmail").value.trim();
+    const j = await api("/api/waitlist", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) });
+    if (j.ok) { $("waitMsg").textContent = "You're on the list — we'll be in touch."; form.reset(); toast("Thanks — you're on the list"); }
+    else { $("waitMsg").textContent = j.error || "Something went wrong."; }
+  };
+}
+
 // ---------- EXPLORE gallery ----------
 const PLAY_SVG = '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="11" fill="rgba(8,11,16,.65)"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>';
 function paintGallery() {

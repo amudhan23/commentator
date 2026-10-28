@@ -4,6 +4,19 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Commentator — the match, called your way</title>
+<meta name="description" content="AI commentary for live sport. An agent watches any match and calls it in real time — your style, your language, your voice. Mute the broadcast you were given; hear the one you want." />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Commentator — the match, called your way" />
+<meta property="og:description" content="An AI agent watches any match and calls it live, in your style, language and voice." />
+<meta property="og:image" content="/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Commentator — the match, called your way" />
+<meta name="twitter:description" content="An AI agent watches any match and calls it live, in your style, language and voice." />
+<meta name="twitter:image" content="/og.png" />
+<meta name="theme-color" content="#0b0e13" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -309,8 +322,16 @@
 
       <section class="cta-band">
         <h2>Hear the match your way.</h2>
-        <p>Upload a clip and let the agent call it — in about a minute.</p>
-        <button class="btn" onclick="window.__go&&window.__go('studio')">Open the Studio</button>
+        <p>Upload a clip and let the agent call it — in about a minute. Or get updates as we open it up.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:14px">
+          <button class="btn" onclick="window.__go&&window.__go('studio')">Open the Studio</button>
+          <button class="btn ghost" onclick="window.__go&&window.__go('explore')">Explore matches</button>
+        </div>
+        <form id="waitForm" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:440px;margin:18px auto 0">
+          <input id="waitEmail" type="email" placeholder="you@email.com" style="flex:1;min-width:200px" />
+          <button class="btn" type="submit">Get early access</button>
+        </form>
+        <p id="waitMsg" class="hint" style="margin-top:10px"></p>
       </section>
     </div>
     <footer class="site"><span class="wm">COMMEN<b>/</b>TATOR</span> · AI commentary for live sport · demo build</footer>
