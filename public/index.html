@@ -96,8 +96,9 @@
   .moment .head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
   .moment .time { font-family:Oswald,sans-serif; font-weight:600; color:var(--flood); }
   .chip { font-size:11px; font-weight:600; padding:2px 9px; border-radius:999px; background:#223; color:var(--muted); border:1px solid var(--line); text-transform:capitalize; }
-  .chip.goal { background:rgba(69,217,138,.14); color:var(--good); border-color:transparent; }
-  .chip.save,.chip.chance { background:rgba(255,176,32,.14); color:var(--flood); border-color:transparent; }
+  .chip.goal,.chip.six,.chip.four,.chip.boundary,.chip.milestone { background:rgba(69,217,138,.14); color:var(--good); border-color:transparent; }
+  .chip.save,.chip.chance,.chip.appeal,.chip.penalty { background:rgba(255,176,32,.14); color:var(--flood); border-color:transparent; }
+  .chip.wicket,.chip.foul,.chip.run-out { background:rgba(255,71,71,.14); color:var(--live); border-color:transparent; }
   .moment .saw { font-size:13px; color:var(--muted); margin:0 0 6px; }
   .moment .saw b { color:var(--text); font-weight:600; }
   .moment .said { font-size:15px; font-weight:500; margin:0; }
@@ -394,7 +395,7 @@
     <!-- STUDIO -->
     <section id="view-studio" class="view">
       <h1 class="title">Studio</h1>
-      <p class="lead">Upload a match clip, choose a commentator and a language, and the agent watches it and writes the commentary — grounded in what actually happened on the pitch.</p>
+      <p class="lead">Upload a match clip, choose the sport, a commentator and a language, and the agent watches it and writes the commentary — grounded in what actually happened.</p>
 
       <div class="row">
         <div class="ctl" style="min-width:240px">
@@ -402,6 +403,7 @@
           <select id="clipPick"><option value="">— upload one —</option></select>
         </div>
         <label class="pick">Upload clip<input id="uploadFile" type="file" accept="video/*" hidden /></label>
+        <div class="ctl"><span>Sport</span><select id="studioSport"></select></div>
         <div class="ctl"><span>Commentator</span><select id="studioPersona"></select></div>
         <div class="ctl"><span>Language</span><select id="studioLang"></select></div>
         <div class="ctl"><span>Moments</span><select id="studioMax"><option>4</option><option selected>6</option><option>8</option><option>10</option></select></div>

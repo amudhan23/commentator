@@ -5,6 +5,7 @@ import { AudioSpikeDetector } from "./engine/detector.js";
 import { synthesize } from "./voice/speak.js";
 import { getPersona, PersonaId } from "./commentary/personas.js";
 import { langBySlug } from "./commentary/languages.js";
+import { sportById } from "./commentary/sports.js";
 import { extractBurst, extractPoster } from "./vision/frames.js";
 import { narrateMoment } from "./vision/narrate.js";
 import { geminiText } from "./llm/gemini.js";
@@ -31,6 +32,8 @@ export interface Manifest {
   persona: PersonaId;
   personaName: string;
   accent: string;
+  sport: string;
+  sportName: string;
   langSlug: string;
   langName: string;
   bcp47: string;
@@ -53,6 +56,7 @@ export interface PipelineOptions {
   mock?: boolean;
   minSignificance?: number;
   maxMoments?: number;
+  sport?: string;
   onEvent?: (e: ProgressEvent) => void;
 }
 
@@ -80,6 +84,7 @@ export async function buildTrack(opts: PipelineOptions): Promise<{ name: string;
   const outDir = opts.outDir ?? "public";
   const persona = await getPersona(opts.persona);
   const lang = langBySlug(opts.langSlug);
+  const sport = sportById(opts.sport || "football");
   const mock = opts.mock || !process.env.ELEVENLABS_API_KEY;
   const minSig = opts.minSignificance ?? 0.25;
 
@@ -103,7 +108,7 @@ export async function buildTrack(opts: PipelineOptions): Promise<{ name: string;
   for (const c of candidates) {
     try {
       const frames = await extractBurst(opts.clipPath, c.tSeconds, { count: 5 });
-      const m = await narrateMoment(frames, { style: persona.style, language: lang.name });
+      const m = await narrateMoment(frames, { style: persona.style, language: lang.name, sportAnalyst: sport.analyst, sportEvents: sport.events });
 
       if (m.significance < minSig || m.eventType === "nothing") {
         emit({ type: "skip", t: c.tSeconds, reason: m.eventType });
@@ -157,6 +162,8 @@ export async function buildTrack(opts: PipelineOptions): Promise<{ name: string;
     persona: persona.id,
     personaName: persona.name,
     accent: persona.accent,
+    sport: sport.id,
+    sportName: sport.name,
     langSlug: lang.slug,
     langName: lang.name,
     bcp47: lang.bcp47,
@@ -188,12 +195,12 @@ function fmt(sec: number): string {
 const runDirectly =
   !!process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (runDirectly) {
-  const [clip, persona = "drury", langSlug = "en"] = process.argv.slice(2);
+  const [clip, persona = "drury", langSlug = "en", sport = "football"] = process.argv.slice(2);
   if (!clip) {
-    console.error("Usage: npm run track -- <clip.mp4> [persona] [en|ta|hi|es|pt]");
+    console.error("Usage: npm run track -- <clip.mp4> [persona] [lang] [cricket|football|auto]");
     process.exit(1);
   }
-  buildTrack({ clipPath: clip, persona, langSlug }).catch((e) => {
+  buildTrack({ clipPath: clip, persona, langSlug, sport }).catch((e) => {
     console.error("Failed:", e.message);
     process.exit(1);
   });

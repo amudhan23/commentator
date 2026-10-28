@@ -17,6 +17,7 @@ import { extname, join, normalize, basename } from "node:path";
 import { MatchAgent, MemoryEntry } from "./src/agent/matchAgent.js";
 import { listPersonas, saveCustomPersona } from "./src/commentary/personas.js";
 import { LANGUAGES } from "./src/commentary/languages.js";
+import { SPORTS } from "./src/commentary/sports.js";
 import { buildTrack } from "./src/pipeline.js";
 
 // --- optional .env load (so zero-setup users don't need --env-file) --------
@@ -83,6 +84,7 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
         tracks.push({
           file: f, clip: m.clip ?? null, thumb: m.thumb ?? null, persona: m.persona,
           personaName: m.personaName ?? m.persona, accent: m.accent ?? "#ffb020",
+          sport: m.sport ?? null, sportName: m.sportName ?? null,
           langSlug: m.langSlug, langName: m.langName ?? m.langSlug,
           moments: (m.events || []).length, generatedAt: m.generatedAt ?? null,
         });
@@ -97,6 +99,7 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
     return json(res, 200, {
       personas: await listPersonas(),
       languages: LANGUAGES,
+      sports: SPORTS,
       canGenerate: !!process.env.GEMINI_API_KEY,
       studioVoice: !!process.env.ELEVENLABS_API_KEY,
     });
@@ -140,6 +143,7 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
         clipPath,
         persona: String(body.persona || "drury"),
         langSlug: String(body.langSlug || "en"),
+        sport: String(body.sport || "football"),
         outDir: ROOT,
         maxMoments: body.maxMoments ? Number(body.maxMoments) : undefined,
         onEvent: send,

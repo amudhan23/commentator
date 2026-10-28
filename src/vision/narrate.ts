@@ -16,21 +16,24 @@ export interface NarratedMoment extends PlayAnalysis {
 
 export async function narrateMoment(
   frames: Frame[],
-  opts: { style: string; language: string },
+  opts: { style: string; language: string; sportAnalyst?: string; sportEvents?: string },
 ): Promise<NarratedMoment> {
   if (frames.length === 0) {
     return { description: "No frames.", eventType: "nothing", significance: 0, commentary: "" };
   }
 
+  const analyst = opts.sportAnalyst || "a football (soccer) match analyst and play-by-play commentator";
+  const events = opts.sportEvents || "goal, chance, save, foul, penalty, buildup, celebration, or nothing";
+
   const system =
-    "You are a football match analyst and play-by-play commentator. You look at a short " +
-    "burst of frames in time order, work out what actually happened (facts only — never " +
-    "invent player names or scores), then deliver a commentary line about that real moment.";
+    `You are ${analyst}. You look at a short burst of frames in time order, work out what ` +
+    "actually happened (facts only — never invent player names or scores), then deliver a " +
+    "commentary line about that real moment.";
 
   const prompt = [
     "The frames are in time order. Do all of this:",
     "1) Describe what actually happens across them, one factual sentence.",
-    "2) Classify eventType: goal, chance, save, foul, buildup, celebration, or nothing.",
+    `2) Classify eventType as one of: ${events}.`,
     "3) Rate significance 0 to 1 (how big a moment it is).",
     "4) Read any on-screen text (scoreline, clock, names).",
     `5) Write a commentary line in ${opts.language}, in THIS style: ${opts.style}`,

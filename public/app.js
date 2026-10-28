@@ -41,6 +41,7 @@ async function refreshAll() {
   ]);
   state.personas = pj.personas || [];
   state.languages = pj.languages || [];
+  state.sports = pj.sports || [];
   state.tracks = tj.tracks || [];
   state.clips = cj.clips || [];
   state.canGenerate = !!pj.canGenerate;
@@ -107,6 +108,8 @@ function paintSelects() {
   $("langPick").innerHTML = langOpts;
   $("studioPersona").innerHTML = personaOpts;
   $("studioLang").innerHTML = langOpts;
+  const sportSel = $("studioSport");
+  if (sportSel) sportSel.innerHTML = state.sports.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
 }
 
 function paintClipList() {
@@ -273,7 +276,7 @@ let studioResult = "";
 async function generate() {
   const clip = $("clipPick").value;
   if (!clip) { $("studioHint").textContent = "Upload or pick a clip first."; return; }
-  const body = { clip, persona: $("studioPersona").value, langSlug: $("studioLang").value, maxMoments: Number($("studioMax").value) };
+  const body = { clip, persona: $("studioPersona").value, langSlug: $("studioLang").value, sport: $("studioSport").value, maxMoments: Number($("studioMax").value) };
   studioResult = ""; $("watchResult").classList.add("hidden");
   $("generate").disabled = true;
   $("progress").classList.add("on");
@@ -349,7 +352,7 @@ function paintGallery() {
       </div>
       <div class="body">
         <p class="nm">${esc(prettyClip(t.clip))}</p>
-        <p class="mt">${t.moments} moments · called by ${esc(t.personaName)}</p>
+        <p class="mt">${t.sportName ? esc(t.sportName) + " · " : ""}${t.moments} moments · ${esc(t.personaName)}</p>
       </div>
       <div class="acts">
         <button class="btn" data-watch="${esc(t.file)}">Watch</button>
