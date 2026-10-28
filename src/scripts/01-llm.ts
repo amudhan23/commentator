@@ -4,11 +4,13 @@
 // Success = you see a commentary line printed. That is it. One concept down.
 
 import { generateCommentary } from "../commentary/generate.js";
+import { getPersona } from "../commentary/personas.js";
 
 async function main() {
+  const drury = await getPersona("drury");
   const line = await generateCommentary(
     { tSeconds: 67 * 60, intensity: 2.4, note: "striker through on goal, one-on-one with the keeper" },
-    { persona: "drury", language: "English" },
+    { style: drury.style, language: "English" },
   );
   console.log("\n🎙️  Commentary:\n" + line + "\n");
 }

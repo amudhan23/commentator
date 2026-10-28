@@ -15,15 +15,16 @@
 import { AudioSpikeDetector } from "./engine/detector.js";
 import { generateCommentary } from "./commentary/generate.js";
 import { synthesize, play } from "./voice/speak.js";
-import { PersonaName } from "./commentary/personas.js";
+import { getPersona } from "./commentary/personas.js";
 
 async function main() {
   const file = process.argv[2];
-  const persona = (process.argv[3] as PersonaName) ?? "drury";
+  const personaId = process.argv[3] ?? "drury";
   if (!file) {
-    console.error("Usage: npm run demo -- <clip.mp4> [drury|analyst|neutral]");
+    console.error("Usage: npm run demo -- <clip.mp4> [drury|analyst|hype|neutral]");
     process.exit(1);
   }
+  const persona = await getPersona(personaId);
 
   // 1. DETECT — the moat. (Later: a Rust service behind this same call.)
   console.log("Detecting moments…");
@@ -39,7 +40,7 @@ async function main() {
     i++;
     const line = await generateCommentary(
       { tSeconds: m.tSeconds, intensity: m.intensity },
-      { persona },
+      { style: persona.style },
     );
     const mm = Math.floor(m.tSeconds / 60);
     const ss = String(Math.floor(m.tSeconds % 60)).padStart(2, "0");
