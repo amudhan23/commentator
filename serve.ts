@@ -35,7 +35,8 @@ const VIDEO_EXT = new Set([".mp4", ".webm", ".mov", ".mkv", ".m4v"]);
 const TYPES: Record<string, string> = {
   ".html": "text/html", ".js": "text/javascript", ".json": "application/json",
   ".mp3": "audio/mpeg", ".css": "text/css", ".mp4": "video/mp4", ".webm": "video/webm",
-  ".mov": "video/quicktime", ".svg": "image/svg+xml",
+  ".mov": "video/quicktime", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+  ".png": "image/png", ".ico": "image/x-icon",
 };
 
 const server = createServer(async (req, res) => {
@@ -80,8 +81,9 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
       try {
         const m = JSON.parse(await readFile(join(TRACKS, f), "utf8"));
         tracks.push({
-          file: f, clip: m.clip ?? null, persona: m.persona, personaName: m.personaName ?? m.persona,
-          accent: m.accent ?? "#ffb020", langSlug: m.langSlug, langName: m.langName ?? m.langSlug,
+          file: f, clip: m.clip ?? null, thumb: m.thumb ?? null, persona: m.persona,
+          personaName: m.personaName ?? m.persona, accent: m.accent ?? "#ffb020",
+          langSlug: m.langSlug, langName: m.langName ?? m.langSlug,
           moments: (m.events || []).length, generatedAt: m.generatedAt ?? null,
         });
       } catch { /* skip malformed */ }

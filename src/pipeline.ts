@@ -5,7 +5,7 @@ import { AudioSpikeDetector } from "./engine/detector.js";
 import { synthesize } from "./voice/speak.js";
 import { getPersona, PersonaId } from "./commentary/personas.js";
 import { langBySlug } from "./commentary/languages.js";
-import { extractBurst } from "./vision/frames.js";
+import { extractBurst, extractPoster } from "./vision/frames.js";
 import { narrateMoment } from "./vision/narrate.js";
 import { geminiText } from "./llm/gemini.js";
 
@@ -27,6 +27,7 @@ export interface ManifestEvent {
 
 export interface Manifest {
   clip: string | null;      // video filename served under clips/
+  thumb: string | null;     // poster image served under thumbs/
   persona: PersonaId;
   personaName: string;
   accent: string;
@@ -137,8 +138,22 @@ export async function buildTrack(opts: PipelineOptions): Promise<{ name: string;
     }
   }
 
+  // Poster thumbnail for the gallery — a frame from the biggest moment.
+  let thumb: string | null = null;
+  try {
+    const posterT = events.length
+      ? [...events].sort((a, b) => b.significance - a.significance)[0].t
+      : (candidates[0]?.tSeconds ?? 0);
+    const thumbsDir = join(outDir, "thumbs");
+    await mkdir(thumbsDir, { recursive: true });
+    const thumbFile = `${manifestKey(clipFile, persona.id, lang.slug)}.jpg`;
+    await extractPoster(opts.clipPath, posterT, join(thumbsDir, thumbFile));
+    thumb = `thumbs/${thumbFile}`;
+  } catch { /* thumbnail is best-effort */ }
+
   const manifest: Manifest = {
     clip: clipFile,
+    thumb,
     persona: persona.id,
     personaName: persona.name,
     accent: persona.accent,
