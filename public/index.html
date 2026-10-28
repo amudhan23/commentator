@@ -127,22 +127,168 @@
   form.create label { font-size:12px; color:var(--muted); display:block; margin-bottom:5px; }
   form.create .full { grid-column:1/-1; }
   .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* ───────────── landing ───────────── */
+  .bar .launch { margin-left:4px; background:var(--flood); color:#241a00; border:0; border-radius:9px; padding:9px 16px; font-weight:600; font-size:14px; }
+  .bar .launch:hover { filter:brightness(1.07); }
+
+  .home { max-width:1140px; margin:0 auto; padding:0 22px 40px; }
+  .hero { position:relative; padding:80px 0 64px; text-align:center; overflow:hidden; }
+  .hero::before { content:""; position:absolute; inset:-40% 0 auto 0; height:620px; background:radial-gradient(60% 70% at 50% 0%, rgba(255,176,32,.16), transparent 70%); pointer-events:none; }
+  .hero .kicker { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--flood); border:1px solid rgba(255,176,32,.3); background:rgba(255,176,32,.07); padding:6px 13px; border-radius:999px; margin-bottom:22px; }
+  .hero .kicker .pip { width:7px; height:7px; border-radius:50%; background:var(--flood); }
+  .hero h1 { font-family:Oswald,sans-serif; font-weight:700; font-size:clamp(40px,7vw,76px); line-height:1.02; letter-spacing:-.5px; margin:0 auto 20px; max-width:16ch; }
+  .hero h1 em { font-style:normal; color:var(--flood); }
+  .hero .sub { color:var(--muted); font-size:clamp(16px,2.3vw,20px); max-width:60ch; margin:0 auto 30px; line-height:1.55; }
+  .hero .cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .hero .cta .btn { padding:14px 26px; font-size:15px; }
+  .fade-up { opacity:0; transform:translateY(16px); animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) forwards; }
+  .fade-up.d1 { animation-delay:.08s; } .fade-up.d2 { animation-delay:.16s; } .fade-up.d3 { animation-delay:.24s; } .fade-up.d4 { animation-delay:.32s; }
+  @keyframes fadeUp { to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .fade-up{ animation:none; opacity:1; transform:none; } }
+
+  /* broadcast mock */
+  .broadcast { position:relative; max-width:860px; margin:46px auto 0; aspect-ratio:16/9; border-radius:16px; border:1px solid var(--line); overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 10%, #16321f 0%, #0c160f 55%, #080b10 100%); box-shadow:0 30px 80px -30px rgba(0,0,0,.8); }
+  .broadcast .pitch-lines { position:absolute; inset:0; opacity:.14; background:
+    repeating-linear-gradient(90deg, transparent 0 46px, rgba(255,255,255,.5) 46px 48px); }
+  .broadcast .scoreline { position:absolute; top:16px; left:16px; display:flex; align-items:center; gap:10px; background:rgba(8,11,16,.75); border:1px solid var(--line); border-radius:10px; padding:7px 13px; font-family:Oswald,sans-serif; font-weight:600; letter-spacing:.5px; font-size:14px; }
+  .broadcast .scoreline .live { display:inline-flex; align-items:center; gap:6px; color:var(--live); font-size:11px; }
+  .broadcast .scoreline .live .d { width:7px; height:7px; border-radius:50%; background:var(--live); animation:beat 1.3s infinite; }
+  @keyframes beat { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .broadcast .lower { position:absolute; left:18px; right:18px; bottom:18px; display:flex; }
+  .broadcast .lower .flag { background:var(--flood); color:#241a00; font-family:Oswald,sans-serif; font-weight:700; font-size:13px; letter-spacing:.5px; padding:0 14px; display:flex; align-items:center; border-radius:11px 0 0 11px; white-space:nowrap; transition:background .3s; }
+  .broadcast .lower .say { background:rgba(8,11,16,.9); border:1px solid var(--line); border-left:0; padding:14px 18px; border-radius:0 11px 11px 0; font-size:clamp(15px,2.3vw,22px); font-weight:600; flex:1; min-height:54px; display:flex; align-items:center; }
+  .broadcast .cursor { display:inline-block; width:2px; height:1.1em; background:var(--flood); margin-left:3px; vertical-align:text-bottom; animation:blink 1s steps(1) infinite; }
+  @keyframes blink { 50%{opacity:0} }
+
+  /* sections */
+  section.block { padding:62px 0; border-top:1px solid var(--line); }
+  .block h2 { font-family:Oswald,sans-serif; font-weight:600; font-size:clamp(26px,4vw,38px); letter-spacing:-.3px; margin:0 0 14px; }
+  .block .blurb { color:var(--muted); font-size:17px; max-width:62ch; line-height:1.6; margin:0 0 34px; }
+  .center { text-align:center; } .center .blurb { margin-left:auto; margin-right:auto; }
+
+  .insight { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  @media (max-width:760px){ .insight { grid-template-columns:1fr; } }
+  .insight .col { border:1px solid var(--line); border-radius:14px; padding:26px; background:var(--surface); }
+  .insight .col.before { border-top:3px solid #3a4553; }
+  .insight .col.after { border-top:3px solid var(--flood); }
+  .insight .col h3 { font-family:Oswald,sans-serif; font-weight:600; font-size:19px; margin:0 0 10px; }
+  .insight .col p { color:var(--muted); line-height:1.6; margin:0; }
+  .insight .col.after p { color:var(--text); }
+
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; counter-reset:step; }
+  @media (max-width:760px){ .steps { grid-template-columns:1fr; } }
+  .step { border:1px solid var(--line); border-radius:14px; padding:24px; background:var(--surface); position:relative; }
+  .step .n { font-family:Oswald,sans-serif; font-weight:700; font-size:15px; color:var(--ink); background:var(--flood); width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+  .step h3 { font-family:Oswald,sans-serif; font-weight:600; font-size:18px; margin:0 0 8px; }
+  .step p { color:var(--muted); line-height:1.55; margin:0; font-size:15px; }
+
+  .features { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  @media (max-width:860px){ .features { grid-template-columns:1fr 1fr; } }
+  @media (max-width:560px){ .features { grid-template-columns:1fr; } }
+  .feat { border:1px solid var(--line); border-radius:14px; padding:22px; background:var(--surface); }
+  .feat .ic { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--surface-2); margin-bottom:14px; }
+  .feat .ic svg { width:20px; height:20px; stroke:var(--flood); fill:none; stroke-width:1.8; }
+  .feat h3 { font-family:Oswald,sans-serif; font-weight:600; font-size:17px; margin:0 0 7px; }
+  .feat p { color:var(--muted); line-height:1.55; margin:0; font-size:14.5px; }
+
+  .vision { background:linear-gradient(180deg,var(--surface),var(--ink)); border:1px solid var(--line); border-radius:18px; padding:46px; text-align:center; }
+  .vision h2 { margin-bottom:12px; }
+  .vision .blurb { margin:0 auto 26px; }
+
+  .cta-band { text-align:center; padding:70px 0 20px; }
+  .cta-band h2 { font-family:Oswald,sans-serif; font-weight:700; font-size:clamp(28px,4.5vw,44px); margin:0 0 10px; }
+  .cta-band p { color:var(--muted); margin:0 0 26px; }
+
+  footer.site { border-top:1px solid var(--line); padding:30px 22px; text-align:center; color:var(--muted); font-size:13px; }
+  footer.site .wm { font-family:Oswald,sans-serif; font-weight:700; letter-spacing:1.5px; color:var(--text); }
+  footer.site .wm b { color:var(--flood); }
 </style>
 </head>
 <body>
   <div class="bar">
-    <div class="wordmark">COMMEN<b>/</b>TATOR</div>
+    <div class="wordmark" style="cursor:pointer" onclick="window.__go&&window.__go('home')">COMMEN<b>/</b>TATOR</div>
     <nav>
-      <button data-view="watch" class="active">Watch</button>
+      <button data-view="home" class="active">Home</button>
+      <button data-view="watch">Watch</button>
       <button data-view="studio">Studio</button>
       <button data-view="commentators">Commentators</button>
     </nav>
     <div class="status"><span id="genDot" class="dot off"></span><span id="statusText">checking…</span></div>
+    <button class="launch" onclick="window.__go&&window.__go('studio')">Open Studio</button>
   </div>
+
+  <!-- HOME / LANDING -->
+  <section id="view-home" class="view active">
+    <div class="home">
+      <div class="hero">
+        <div class="kicker fade-up"><span class="pip"></span> AI commentary for live sport</div>
+        <h1 class="fade-up d1">The match, <em>called your way</em>.</h1>
+        <p class="sub fade-up d2">Commentator watches any match and calls it in real time — your style, your language, your voice. Mute the broadcast you were given. Hear the one you actually want.</p>
+        <div class="cta fade-up d3">
+          <button class="btn" onclick="window.__go&&window.__go('studio')">Try the demo</button>
+          <button class="btn ghost" onclick="window.__go&&window.__go('watch')">Watch an example</button>
+        </div>
+
+        <div class="broadcast fade-up d4">
+          <div class="pitch-lines"></div>
+          <div class="scoreline"><span class="live"><span class="d"></span>LIVE</span> ARS 1 · 1 RMA</div>
+          <div class="lower"><div class="flag" id="heroFlag">EPIC</div><div class="say"><span id="heroSay"></span><span class="cursor"></span></div></div>
+        </div>
+      </div>
+
+      <section class="block">
+        <h2>One match. One commentary. One bias.</h2>
+        <p class="blurb">Every broadcast forces a single feed on everyone watching — one language, one style, one set of opinions. Half the planet watches in a language that isn't theirs, with commentary they'd mute if they could.</p>
+        <div class="insight">
+          <div class="col before"><h3>The broadcast you're given</h3><p>English only. The same two voices. Talking over the moment you cared about, silent on the one you didn't. Take it or leave it.</p></div>
+          <div class="col after"><h3>The one Commentator gives you</h3><p>The agent watches the actual play and calls it in your language, in a style you pick — or just unmutes the real feed the instant something big happens. Your match, your way.</p></div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>How it works</h2>
+        <p class="blurb">No box scores, no manual tagging. The agent watches the footage the way you do — and reacts to what it actually sees.</p>
+        <div class="steps">
+          <div class="step"><div class="n">1</div><h3>Drop in a match</h3><p>Upload a clip (or point it at a stream). No metadata needed.</p></div>
+          <div class="step"><div class="n">2</div><h3>The agent watches</h3><p>It finds the big moments and looks at the real frames — who did what, where, how it ended.</p></div>
+          <div class="step"><div class="n">3</div><h3>Watch it your way</h3><p>Grounded commentary, in your language and style, in sync — plus a companion you can ask about the game.</p></div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Everything in one place</h2>
+        <div class="features">
+          <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></div><h3>It sees the play</h3><p>Commentary grounded in the real frames — "finishes low across the keeper," not generic hype.</p></div>
+          <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></div><h3>Any language</h3><p>A match only aired in English, narrated live in Tamil, Hindi, Spanish and more.</p></div>
+          <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10a7 7 0 0 1-14 0M12 19v4"/></svg></div><h3>Any style or voice</h3><p>Epic, tactical, pure hype — switch on the fly, or bring a voice of your own.</p></div>
+          <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><h3>Never miss a goal</h3><p>Watch muted — it unmutes the real broadcast the instant something big breaks.</p></div>
+          <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>Ask the agent</h3><p>"What was the best chance?" It answers from what it actually watched — a co-watcher, not a stat sheet.</p></div>
+          <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM20 8v6M23 11h-6"/></svg></div><h3>Create commentators</h3><p>A style and a voice is all it takes. The seed of a marketplace of creator-made commentators.</p></div>
+        </div>
+      </section>
+
+      <section class="block center">
+        <div class="vision">
+          <h2>Where this goes</h2>
+          <p class="blurb">The endgame isn't a better mute button — it's a platform. Any creator uploads their voice and style; any fan watches any match called by whoever they love, live, in any language. Commentary becomes something you choose, not something you're handed.</p>
+          <button class="btn" onclick="window.__go&&window.__go('commentators')">Meet the commentators</button>
+        </div>
+      </section>
+
+      <section class="cta-band">
+        <h2>Hear the match your way.</h2>
+        <p>Upload a clip and let the agent call it — in about a minute.</p>
+        <button class="btn" onclick="window.__go&&window.__go('studio')">Open the Studio</button>
+      </section>
+    </div>
+    <footer class="site"><span class="wm">COMMEN<b>/</b>TATOR</span> · AI commentary for live sport · demo build</footer>
+  </section>
 
   <div class="page">
     <!-- WATCH -->
-    <section id="view-watch" class="view active">
+    <section id="view-watch" class="view">
       <h1 class="title">Watch</h1>
       <p class="lead">Pick a generated track and watch the match called your way — switch the commentator or language on the fly, or let it unmute the real broadcast on the big moments.</p>
 
