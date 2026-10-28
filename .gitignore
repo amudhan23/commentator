@@ -1,5 +1,16 @@
 node_modules/
 .env
+
+# runtime artifacts (user content, generated output)
 *.mp3
+data/
+public/clips/*
+!public/clips/.gitkeep
+public/audio/*
+!public/audio/.gitkeep
+
+# generated tracks (keep the committed samples, ignore locally generated ones)
+public/tracks/manifest.*.*.*.json
+
 src/clips/*
 !src/clips/.gitkeep
