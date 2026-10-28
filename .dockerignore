@@ -1,0 +1,11 @@
+node_modules
+.git
+.env
+*.mp3
+public/clips/*
+public/audio/*
+public/thumbs/*
+data
+arsVsReal.mp4
+/tmp
+npm-debug.log

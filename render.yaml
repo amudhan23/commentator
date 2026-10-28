@@ -1,0 +1,22 @@
+# One-click deploy to Render (https://render.com).
+# In the Render dashboard: New → Blueprint → point at this repo.
+# Then set GEMINI_API_KEY (and optionally ELEVENLABS_API_KEY) as env vars.
+services:
+  - type: web
+    name: commentator
+    runtime: node
+    plan: starter            # free/starter is fine for a demo
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false          # set in the dashboard (secret)
+      - key: ELEVENLABS_API_KEY
+        sync: false          # optional; set in the dashboard
+    # Uploaded clips + generated tracks are written to disk. On the starter
+    # plan that disk is ephemeral (resets on deploy). For persistence, attach
+    # a Render Disk mounted at /app/public and it survives restarts.

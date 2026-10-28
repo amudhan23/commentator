@@ -12,15 +12,19 @@
     "track": "tsx --env-file=.env src/pipeline.ts",
     "models": "tsx --env-file=.env src/scripts/list-models.ts",
     "try": "tsx --env-file=.env src/scripts/try-models.ts",
-    "serve": "tsx serve.ts"
+    "serve": "tsx serve.ts",
+    "start": "tsx serve.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "ffmpeg-static": "^5.3.0"
+    "ffmpeg-static": "^5.3.0",
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "tsx": "^4.19.2",
     "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20.6"
   }
 }
