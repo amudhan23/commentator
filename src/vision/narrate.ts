@@ -1,6 +1,5 @@
 import { geminiText, imagePart } from "../llm/gemini.js";
 import { Frame } from "./frames.js";
-import { PERSONAS, PersonaName } from "../commentary/personas.js";
 import type { PlayAnalysis } from "./analyze.js";
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -11,13 +10,13 @@ import type { PlayAnalysis } from "./analyze.js";
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface NarratedMoment extends PlayAnalysis {
-  /** The commentary line, in the chosen persona + language. */
+  /** The commentary line, in the chosen style + language. */
   commentary: string;
 }
 
 export async function narrateMoment(
   frames: Frame[],
-  opts: { persona: PersonaName; language: string },
+  opts: { style: string; language: string },
 ): Promise<NarratedMoment> {
   if (frames.length === 0) {
     return { description: "No frames.", eventType: "nothing", significance: 0, commentary: "" };
@@ -34,7 +33,7 @@ export async function narrateMoment(
     "2) Classify eventType: goal, chance, save, foul, buildup, celebration, or nothing.",
     "3) Rate significance 0 to 1 (how big a moment it is).",
     "4) Read any on-screen text (scoreline, clock, names).",
-    `5) Write a commentary line in ${opts.language}, in THIS style: ${PERSONAS[opts.persona]}`,
+    `5) Write a commentary line in ${opts.language}, in THIS style: ${opts.style}`,
     "   Stay true to what actually happened; do not invent details.",
     opts.language !== "English"
       ? `   The commentary field must be in ${opts.language} only (no translation/transliteration).`
@@ -59,8 +58,6 @@ function parse(text: string): NarratedMoment {
       commentary: String(o.commentary ?? "").trim(),
     };
   } catch {
-    // Couldn't parse — keep whatever text came back as the commentary so the
-    // run still yields something, and flag it for review.
     return { description: text.slice(0, 200), eventType: "unknown", significance: 0.5, commentary: text.slice(0, 200) };
   }
 }

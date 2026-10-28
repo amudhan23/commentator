@@ -1,11 +1,11 @@
 import { geminiText } from "../llm/gemini.js";
-import { PERSONAS, PersonaName } from "./personas.js";
 import type { PlayAnalysis } from "../vision/analyze.js";
 
 // ─────────────────────────────────────────────────────────────────────────
-// Turn a moment into a line of commentary, in the chosen persona + language.
-// Prefer generateGroundedCommentary() — it narrates what the agent actually
-// SAW. The plain generateCommentary() is kept for the day-1 script.
+// Commentary generation. The main pipeline uses narrateMoment (vision +
+// commentary in one call); these helpers remain for the day-1 script and for
+// generating a line from an existing analysis. `style` is the persona's
+// instruction text (resolved by the caller from the persona registry).
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface MomentContext {
@@ -15,16 +15,19 @@ export interface MomentContext {
 }
 
 export interface GenerateOptions {
-  persona?: PersonaName;
+  style?: string;
   /** Language name to narrate in: "English", "Tamil", "Hindi", "Spanish"… */
   language?: string;
 }
+
+const DEFAULT_STYLE =
+  "A concise football commentator. State what happened clearly in one or two sentences, no preamble.";
 
 export async function generateCommentary(
   ctx: MomentContext,
   opts: GenerateOptions = {},
 ): Promise<string> {
-  const persona = opts.persona ?? "drury";
+  const style = opts.style ?? DEFAULT_STYLE;
   const language = opts.language ?? "English";
   const minute = Math.floor(ctx.tSeconds / 60);
 
@@ -36,18 +39,15 @@ export async function generateCommentary(
     language !== "English" ? `Output ONLY the ${language} text, no translation or transliteration, no quotes.` : ``,
   ].filter(Boolean).join(" ");
 
-  return geminiText(PERSONAS[persona], [prompt], 1024);
+  return geminiText(style, [prompt], 1024);
 }
 
-/**
- * GROUNDED commentary — narrate what the agent actually SAW (a PlayAnalysis
- * from the vision step), in the chosen persona and language.
- */
+/** Narrate an already-computed vision analysis in a given style and language. */
 export async function generateGroundedCommentary(
   analysis: PlayAnalysis,
   opts: GenerateOptions = {},
 ): Promise<string> {
-  const persona = opts.persona ?? "drury";
+  const style = opts.style ?? DEFAULT_STYLE;
   const language = opts.language ?? "English";
 
   const prompt = [
@@ -59,5 +59,5 @@ export async function generateGroundedCommentary(
     language !== "English" ? `Output ONLY the ${language} text, no translation or transliteration, no quotes.` : ``,
   ].filter(Boolean).join(" ");
 
-  return geminiText(PERSONAS[persona], [prompt], 1024);
+  return geminiText(style, [prompt], 1024);
 }
