@@ -1,53 +1,46 @@
-# Recording the 60-second demo (for YC / Speedrun)
+# Recording the demo (for YC / Speedrun)
 
-The application video should make someone *feel* the product in under a minute.
-Show, don't explain. Here is a script that lands.
+Make someone *feel* the product in under a minute. Show, don't explain.
 
-## Setup (once)
+## Before you record
 
-```bash
-npm install
-npm run serve        # opens http://localhost:5173
-```
+1. `npm run serve` → http://localhost:5173
+2. In **Studio**, upload a 2–4 min match clip and **Generate** one track
+   (e.g. Epic / English). Do this ahead of time so the demo isn't waiting on
+   processing. Generate a second variant too (e.g. Tamil, or the Analyst) so
+   you can show switching.
+3. Screen-record the tab with audio (QuickTime / OBS).
 
-Have a **short match clip** ready (2–4 min, with a goal or two). Screen-record
-the browser tab with audio (QuickTime on macOS, or OBS).
-
-> The bundled sample tracks use your browser's built-in voice, so this works
-> with **zero API keys**. For the real, broadcast-quality voice, add your
-> ElevenLabs key and generate tracks (see README) — do that before the final
-> take.
+> For broadcast-quality voice add an ElevenLabs key before the final take;
+> otherwise it uses the browser voice, which is fine for a first cut.
 
 ## The 60-second script
 
-1. **0:00–0:08 — the hook, over a muted match.**
-   "This is a live match, muted. I don't want their commentary. Watch."
-   Pick your clip, let it play. Point out it's silent.
+1. **0:00–0:10 — the hook (Studio).** "I upload a muted match. The agent
+   *watches* it and calls it." Show the Studio generate with the live progress
+   feed — moments appearing as it finds them. (If you pre-generated, just show
+   the feed scrolled.)
 
-2. **0:08–0:24 — the core + the intelligence.** Let it reach a goal. The agent
-   calls it, caption + voice, *in sync*. Then point at the "What the agent sees"
-   card: "It didn't guess — it watched the frames and saw the striker finish low
-   across the keeper, then called that." (This is the beat that kills "it's just
-   canned text.")
+2. **0:10–0:26 — the core + the intelligence (Watch).** Load the track, let it
+   reach a goal. The caption + voice fire in sync. Point at the "What the agent
+   sees" card: "It didn't guess — it watched the frames and saw the striker
+   finish low across the keeper, then called that." This kills "it's just canned."
 
-3. **0:24–0:36 — the layer that sells it.** Switch **Language** to Tamil (or
-   Hindi/Spanish). Same goal, now narrated in your language. "This match is only
-   broadcast in English. Half the planet isn't served. This is."
+3. **0:26–0:38 — the layer that sells it.** Switch **Language** to Tamil (or
+   switch **Commentator** to Analyst). Same goal, re-called. "This match only
+   airs in English. Half the planet isn't served. This is."
 
-4. **0:36–0:46 — it's an agent, not a player.** Type into Ask the agent:
-   "What was the best chance?" It answers from what it actually watched.
-   "You're watching the match *with* it."
+4. **0:38–0:48 — it's an agent.** In **Ask the agent**, type "What was the best
+   chance?" It answers from what it actually watched. "You're watching *with* it."
 
-5. **0:46–1:00 — the vision + moat line.**
-   "Detection and real-time understanding run the core today; next is a
-   marketplace where any creator's voice narrates any match, live. Real-time
-   latency is the hard part — that's my background." Cut.
+5. **0:48–1:00 — the vision (Commentators).** Open Commentators, show the roster,
+   and say the line: "Anyone can add a commentator — a style and a voice. The
+   endgame is a marketplace where any creator's voice calls any match, live.
+   Real-time latency is the hard part — that's my background." Cut.
 
 ## What makes or breaks it
 
-- **Sync.** The line must land *on* the moment. If the sample timestamps don't
-  match your clip, edit `public/tracks/*.json` so the `t` values line up with
-  the real goals in your clip. This is the single most important polish step.
-- **Don't narrate the plumbing.** No "so I built a TypeScript pipeline…".
-  Show the magic; say one sentence about the moat at the end.
+- **Sync.** The caption must land *on* the moment. The generated timestamps come
+  from the real audio, so they line up — but sanity-check one goal before you record.
+- **Don't narrate the plumbing.** Show the magic; one sentence on the moat at the end.
 - **End on the vision, not the tech.** Creators + languages = platform.
