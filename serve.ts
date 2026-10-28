@@ -150,6 +150,20 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
     return res.end();
   }
 
+  // ---- POST /api/waitlist ----
+  if (req.method === "POST" && url === "/api/waitlist") {
+    try {
+      const { email } = JSON.parse(await readBody(req) || "{}");
+      const e = String(email || "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return json(res, 400, { error: "Enter a valid email." });
+      await mkdir("data", { recursive: true });
+      await writeFile(join("data", "waitlist.jsonl"), JSON.stringify({ email: e, at: new Date().toISOString() }) + "\n", { flag: "a" });
+      return json(res, 200, { ok: true });
+    } catch (e) {
+      return json(res, 500, { error: e instanceof Error ? e.message : String(e) });
+    }
+  }
+
   // ---- POST /api/ask ----
   if (req.method === "POST" && url === "/api/ask") {
     try {
