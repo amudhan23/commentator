@@ -60,6 +60,7 @@ async function refreshAll() {
   paintPersonaCards();
   paintGallery();
   paintFeatured();
+  paintDashRecent();
   // status pill (top bar + sidebar)
   const statusText = state.canGenerate
     ? `Generate ready · ${state.tracks.length} track${state.tracks.length === 1 ? "" : "s"}`
@@ -76,6 +77,7 @@ function wireNav() {
   document.querySelectorAll("nav button, .sb-nav button").forEach((b) => {
     b.onclick = () => go(b.dataset.view);
   });
+  document.querySelectorAll("[data-go]").forEach((b) => { b.onclick = () => go(b.dataset.go); });
 }
 
 function go(view) {
@@ -532,6 +534,14 @@ function wireCards(box) {
   box.querySelectorAll("[data-watch]").forEach((b) => b.onclick = () => { go("watch"); loadTrackByFile(b.dataset.watch); });
   box.querySelectorAll("[data-share]").forEach((b) => b.onclick = () => shareTrack(b.dataset.share));
   box.querySelectorAll("[data-like]").forEach((b) => b.onclick = () => likeTrack(b.dataset.like, b));
+}
+
+function paintDashRecent() {
+  const box = $("dashRecent"); if (!box) return;
+  const shown = state.tracks.filter((t) => t.clip).slice(0, 3);
+  if (!shown.length) { box.innerHTML = `<div class="gempty">No matches yet — <b>Call a match</b> above to make your first.</div>`; return; }
+  box.innerHTML = shown.map(trackCard).join("");
+  wireCards(box);
 }
 
 function paintFeatured() {
