@@ -10,6 +10,8 @@ public/audio/*
 !public/audio/.gitkeep
 public/thumbs/*
 !public/thumbs/.gitkeep
+public/moments/*
+!public/moments/.gitkeep
 
 # generated tracks (keep the committed samples, ignore locally generated ones)
 public/tracks/manifest.*.*.*.json
