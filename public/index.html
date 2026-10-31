@@ -252,6 +252,39 @@
   .sharebtn { background:transparent; border:1px solid var(--line); color:var(--text); border-radius:9px; padding:9px 14px; font-size:13px; }
   .sharebtn:hover { border-color:var(--flood); }
 
+  /* ───── app shell (sidebar) — the mature product chrome ───── */
+  .shell { display:none; }
+  body.app .shell { display:flex; min-height:100vh; }
+  body.app > .bar { display:none; }
+  body.app #view-home { display:none !important; }
+
+  .sidebar { width:234px; flex:none; border-right:1px solid var(--line); background:#0e131a; display:flex; flex-direction:column; padding:18px 14px; position:sticky; top:0; height:100vh; }
+  .sb-brand { font-family:Oswald,sans-serif; font-weight:700; letter-spacing:1.5px; font-size:18px; padding:4px 10px 20px; cursor:pointer; }
+  .sb-brand b { color:var(--flood); }
+  .sb-nav { display:flex; flex-direction:column; gap:2px; }
+  .sb-nav button { display:flex; align-items:center; gap:12px; background:transparent; border:0; color:var(--muted); font-size:14px; font-weight:500; padding:10px 12px; border-radius:9px; text-align:left; width:100%; transition:.12s; }
+  .sb-nav button svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linejoin:round; stroke-linecap:round; flex:none; }
+  .sb-nav button:hover { background:var(--surface); color:var(--text); }
+  .sb-nav button.active { background:var(--surface-2); color:var(--text); }
+  .sb-nav button.active svg { stroke:var(--flood); }
+  .sb-foot { margin-top:auto; display:flex; flex-direction:column; gap:12px; padding:14px 10px 4px; }
+  .sb-status { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
+  .sb-status .dot { width:8px; height:8px; border-radius:50%; background:var(--good); flex:none; }
+  .sb-status .dot.off { background:var(--muted); }
+  .sb-home { background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:9px; font-size:13px; }
+  .sb-home:hover { color:var(--text); border-color:var(--flood); }
+  body.app .page { flex:1; min-width:0; max-width:1040px; margin:0; padding:32px 36px 60px; }
+
+  @media (max-width:760px){
+    .sidebar { width:64px; padding:16px 8px; }
+    .sb-brand { font-size:0; padding:4px 0 16px; text-align:center; }
+    .sb-brand b { font-size:22px; }
+    .sb-nav button { justify-content:center; font-size:0; gap:0; padding:12px 0; }
+    .sb-nav button svg { width:20px; height:20px; }
+    .sb-status span:last-child, .sb-home { display:none; }
+    body.app .page { padding:22px 16px 50px; }
+  }
+
   @media (max-width:720px){
     .bar { gap:10px; padding:12px 14px; }
     .bar .status { display:none; }
@@ -371,7 +404,22 @@
     <footer class="site"><span class="wm">COMMEN<b>/</b>TATOR</span> · AI commentary for live sport · demo build</footer>
   </section>
 
-  <div class="page">
+  <div class="shell" id="shell">
+    <aside class="sidebar">
+      <div class="sb-brand" onclick="window.__go&&window.__go('home')">COMMEN<b>/</b>TATOR</div>
+      <nav class="sb-nav">
+        <button data-view="studio"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 14.9 6.9 17.2l1.3-5.6L4 7.8l5.6-.6z"/></svg> Studio</button>
+        <button data-view="live"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M5.5 5.5a9 9 0 0 0 0 13M18.5 5.5a9 9 0 0 1 0 13M8 8a5 5 0 0 0 0 8M16 8a5 5 0 0 1 0 8"/></svg> Live</button>
+        <button data-view="watch"><svg viewBox="0 0 24 24"><path d="M5 4l14 8-14 8z"/></svg> Watch</button>
+        <button data-view="explore"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg> Explore</button>
+        <button data-view="commentators"><svg viewBox="0 0 24 24"><path d="M12 14a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v4a4 4 0 0 0 4 4zM6 10a6 6 0 0 0 12 0M12 16v4"/></svg> Commentators</button>
+      </nav>
+      <div class="sb-foot">
+        <div class="sb-status"><span id="sbDot" class="dot off"></span><span id="sbStatus">checking…</span></div>
+        <button class="sb-home" onclick="window.__go&&window.__go('home')">← Back to site</button>
+      </div>
+    </aside>
+    <main class="page">
     <!-- EXPLORE -->
     <section id="view-explore" class="view">
       <div class="row" style="justify-content:space-between;align-items:baseline">
@@ -501,6 +549,7 @@
         <div><button class="btn" type="submit">Create commentator</button> <span id="createMsg" class="hint"></span></div>
       </form>
     </section>
+    </main>
   </div>
 
   <div id="toast" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--flood);color:#241a00;font-weight:600;padding:11px 20px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;z-index:50"></div>

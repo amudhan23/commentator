@@ -60,23 +60,28 @@ async function refreshAll() {
   paintPersonaCards();
   paintGallery();
   paintFeatured();
-  // status pill
-  $("genDot").className = "dot" + (state.canGenerate ? "" : " off");
-  $("statusText").textContent = state.canGenerate
+  // status pill (top bar + sidebar)
+  const statusText = state.canGenerate
     ? `Generate ready · ${state.tracks.length} track${state.tracks.length === 1 ? "" : "s"}`
     : `Add a Gemini key to generate`;
+  $("genDot").className = "dot" + (state.canGenerate ? "" : " off");
+  $("statusText").textContent = statusText;
+  if ($("sbDot")) $("sbDot").className = "dot" + (state.canGenerate ? "" : " off");
+  if ($("sbStatus")) $("sbStatus").textContent = state.canGenerate ? "Generate ready" : "No Gemini key";
   if (!state.canGenerate) $("studioHint").textContent = "Add GEMINI_API_KEY to your .env to generate commentary. Until then you can browse and watch sample tracks.";
 }
 
 // ---------- nav ----------
 function wireNav() {
-  document.querySelectorAll("nav button").forEach((b) => {
+  document.querySelectorAll("nav button, .sb-nav button").forEach((b) => {
     b.onclick = () => go(b.dataset.view);
   });
 }
 
 function go(view) {
-  document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("active", x.dataset.view === view));
+  // site mode = marketing landing; app mode = sidebar shell
+  document.body.classList.toggle("app", view !== "home");
+  document.querySelectorAll("nav button, .sb-nav button").forEach((x) => x.classList.toggle("active", x.dataset.view === view));
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
   $("view-" + view).classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
