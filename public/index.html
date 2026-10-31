@@ -46,7 +46,9 @@
 
   .page { max-width:1080px; margin:0 auto; padding:24px 22px 60px; }
   .view { display:none; }
-  .view.active { display:block; }
+  .view.active { display:block; animation:viewIn .28s ease both; }
+  @keyframes viewIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .view.active { animation:none; } }
 
   h1.title { font-family:Oswald,sans-serif; font-weight:600; font-size:26px; letter-spacing:.3px; margin:0 0 4px; }
   p.lead { color:var(--muted); margin:0 0 22px; max-width:62ch; }
