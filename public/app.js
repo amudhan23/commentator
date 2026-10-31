@@ -316,7 +316,7 @@ let studioResult = "";
 async function generate() {
   const clip = $("clipPick").value;
   if (!clip) { $("studioHint").textContent = "Upload or pick a clip first."; return; }
-  const body = { clip, persona: $("studioPersona").value, langSlug: $("studioLang").value, sport: $("studioSport").value, maxMoments: Number($("studioMax").value) };
+  const body = { clip, persona: $("studioPersona").value, langSlug: $("studioLang").value, sport: $("studioSport").value, energy: $("studioEnergy").value, maxMoments: Number($("studioMax").value) };
   studioResult = ""; $("watchResult").classList.add("hidden");
   $("generate").disabled = true;
   $("progress").classList.add("on");

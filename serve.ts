@@ -172,6 +172,7 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
         persona: String(body.persona || "drury"),
         langSlug: String(body.langSlug || "en"),
         sport: String(body.sport || "football"),
+        energy: String(body.energy || "balanced"),
         outDir: ROOT,
         maxMoments: body.maxMoments ? Number(body.maxMoments) : undefined,
         onEvent: send,

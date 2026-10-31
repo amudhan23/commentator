@@ -57,6 +57,7 @@ export interface PipelineOptions {
   minSignificance?: number;
   maxMoments?: number;
   sport?: string;
+  energy?: string;
   onEvent?: (e: ProgressEvent) => void;
 }
 
@@ -108,7 +109,7 @@ export async function buildTrack(opts: PipelineOptions): Promise<{ name: string;
   for (const c of candidates) {
     try {
       const frames = await extractBurst(opts.clipPath, c.tSeconds, { count: 5 });
-      const m = await narrateMoment(frames, { style: persona.style, language: lang.name, sportAnalyst: sport.analyst, sportEvents: sport.events });
+      const m = await narrateMoment(frames, { style: persona.style, language: lang.name, sportAnalyst: sport.analyst, sportEvents: sport.events, energy: opts.energy });
 
       if (m.significance < minSig || m.eventType === "nothing") {
         emit({ type: "skip", t: c.tSeconds, reason: m.eventType });
