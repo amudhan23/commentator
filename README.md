@@ -1,11 +1,25 @@
-# match-commentator
+# Commentator — AI sports commentary in your language
 
-Live AI commentary over a muted match. Detect the big moments in a stream, then
-either drop in AI commentary (Peter-Drury-epic, analytical, neutral) or unmute
-the real broadcast.
+**A billion sports fans never get commentary in their language.** Commentator is
+an AI agent that *watches* any match — cricket or football — and calls it live in
+the language, style, and voice you choose. Mute the broadcast you were given; hear
+the one you actually want.
 
-This is the starter scaffold. It gets you from "I've never built AI" to "I have
-a thing that detects goals and talks" — fast.
+> Live demo: _[add your deploy URL]_ · Try it: upload a clip in the Studio, or
+> watch a called match in Explore.
+
+**What it does**
+- 👁️ **Grounded commentary** — the agent watches the real frames, so it says
+  "finishes low across the keeper," not generic hype.
+- 🌍 **Any language** — Hindi, Tamil, Telugu, Bengali, and more (the wedge).
+- 🎙️ **Any style or voice** — epic, tactical, hype, or bring your own commentator.
+- 🔇 **Never miss a goal** — watch muted, it unmutes the real feed on the big moments.
+- 💬 **Ask the agent** — a co-watcher that answers from what it actually watched.
+- ✂️ **Clip & share** — export any called moment as a short video to post.
+
+Cricket-first (India is the biggest underserved-language fan base), sport-agnostic
+by design. See `YC-APPLICATION.md` / `SPEEDRUN-APPLICATION.md` for the thesis and
+`DEPLOY.md` to put it online.
 
 ## How it actually works (the important part)
 
