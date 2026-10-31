@@ -235,10 +235,16 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
     if (activeJobs >= MAX_JOBS) return json(res, 429, { error: "Busy — a few matches are being called right now. Try again in a moment." });
 
     activeJobs++;
+    // Release the slot exactly once — on normal finish OR if the client
+    // disconnects mid-stream (abandoned retries must not leak a slot and
+    // leave the server stuck on "Busy").
+    let released = false;
+    const release = () => { if (!released) { released = true; activeJobs--; } };
+    res.on("close", release);
     res.writeHead(200, {
       "content-type": "text/event-stream", "cache-control": "no-cache", connection: "keep-alive",
     });
-    const send = (e: unknown) => res.write(`data: ${JSON.stringify(e)}\n\n`);
+    const send = (e: unknown) => { try { res.write(`data: ${JSON.stringify(e)}\n\n`); } catch {} };
     try {
       await buildTrack({
         clipPath,
@@ -253,7 +259,7 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
     } catch (e) {
       send({ type: "error", message: e instanceof Error ? e.message : String(e) });
     } finally {
-      activeJobs--;
+      release();
     }
     return res.end();
   }
