@@ -14,9 +14,15 @@ export interface NarratedMoment extends PlayAnalysis {
   commentary: string;
 }
 
+const ENERGY: Record<string, string> = {
+  calm: "Keep it measured and understated, even on big moments.",
+  balanced: "",
+  hype: "Crank the energy up — loud, explosive, edge-of-your-seat.",
+};
+
 export async function narrateMoment(
   frames: Frame[],
-  opts: { style: string; language: string; sportAnalyst?: string; sportEvents?: string },
+  opts: { style: string; language: string; sportAnalyst?: string; sportEvents?: string; energy?: string },
 ): Promise<NarratedMoment> {
   if (frames.length === 0) {
     return { description: "No frames.", eventType: "nothing", significance: 0, commentary: "" };
@@ -24,6 +30,7 @@ export async function narrateMoment(
 
   const analyst = opts.sportAnalyst || "a football (soccer) match analyst and play-by-play commentator";
   const events = opts.sportEvents || "goal, chance, save, foul, penalty, buildup, celebration, or nothing";
+  const energy = ENERGY[opts.energy || "balanced"] || "";
 
   const system =
     `You are ${analyst}. You look at a short burst of frames in time order, work out what ` +
@@ -37,6 +44,7 @@ export async function narrateMoment(
     "3) Rate significance 0 to 1 (how big a moment it is).",
     "4) Read any on-screen text (scoreline, clock, names).",
     `5) Write a commentary line in ${opts.language}, in THIS style: ${opts.style}`,
+    energy ? `   ${energy}` : "",
     "   Stay true to what actually happened; do not invent details.",
     opts.language !== "English"
       ? `   The commentary field must be in ${opts.language} only (no translation/transliteration).`
