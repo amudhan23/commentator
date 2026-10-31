@@ -34,17 +34,20 @@ async function boot() {
 }
 
 async function refreshAll() {
-  const [pj, tj, cj] = await Promise.all([
+  const [pj, tj, cj, vj] = await Promise.all([
     api("/api/personas"),
     api("/api/tracks"),
     api("/api/clips"),
+    api("/api/voices").catch(() => ({ voices: [] })),
   ]);
   state.personas = pj.personas || [];
   state.languages = pj.languages || [];
   state.sports = pj.sports || [];
   state.tracks = tj.tracks || [];
   state.clips = cj.clips || [];
+  state.voices = vj.voices || [];
   state.canGenerate = !!pj.canGenerate;
+  paintVoices();
   paintSelects();
   paintTrackList();
   paintClipList();
@@ -375,6 +378,18 @@ function shareTrack(file) {
 function copy(text, cb) { navigator.clipboard?.writeText(text).then(cb).catch(() => { prompt("Copy this link:", text); }); }
 let toastT;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.opacity = "1"; t.style.transform = "translateX(-50%) translateY(0)"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; t.style.transform = "translateX(-50%) translateY(20px)"; }, 2200); }
+
+function paintVoices() {
+  const sel = $("cVoice"); if (!sel) return;
+  if (state.voices.length) {
+    sel.innerHTML = '<option value="">Default voice</option>' +
+      state.voices.map((v) => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join("");
+    $("voiceNote").textContent = `${state.voices.length} voices from your ElevenLabs library.`;
+  } else {
+    sel.innerHTML = '<option value="">Default voice</option>';
+    $("voiceNote").textContent = "Add an ELEVENLABS_API_KEY to pick a voice; a default is used until then.";
+  }
+}
 
 function paintPersonaCards() {
   $("personaCards").innerHTML = state.personas.map((p) => `

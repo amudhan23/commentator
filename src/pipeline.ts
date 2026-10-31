@@ -119,9 +119,15 @@ export async function buildTrack(opts: PipelineOptions): Promise<{ name: string;
       i++;
       let audio: string | null = null;
       if (!mock) {
-        const file = `${manifestKey(clipFile, persona.id, lang.slug)}-${i}.mp3`;
-        await synthesize(m.commentary, join(audioDir, file), persona.voiceId);
-        audio = `audio/${file}`;
+        try {
+          const file = `${manifestKey(clipFile, persona.id, lang.slug)}-${i}.mp3`;
+          await synthesize(m.commentary, join(audioDir, file), persona.voiceId);
+          audio = `audio/${file}`;
+        } catch (ve) {
+          // Voice is a layer, not the point — if TTS fails (bad voice id, quota),
+          // keep the moment and let the browser voice speak it instead of losing it.
+          console.log(`    (voice skipped: ${ve instanceof Error ? ve.message.slice(0, 120) : ve})`);
+        }
       }
 
       const ev: ManifestEvent = {
