@@ -53,6 +53,7 @@ async function refreshAll() {
   paintClipList();
   paintPersonaCards();
   paintGallery();
+  paintFeatured();
   // status pill
   $("genDot").className = "dot" + (state.canGenerate ? "" : " off");
   $("statusText").textContent = state.canGenerate
@@ -165,6 +166,7 @@ async function loadTrackByFile(file) {
   // video
   if (m.clip) {
     setVideo(`clips/${m.clip}`);
+    recordView(file);
     $("watchStatus").textContent = `${m.events.length} moments · ${m.personaName} · ${m.langName}`;
   } else {
     // old sample track with no clip — ask for a local file
@@ -346,25 +348,66 @@ function paintGallery() {
     box.innerHTML = `<div class="gempty">No matches called yet. <b>Open the Studio</b>, upload a clip, and be the first.</div>`;
     return;
   }
-  box.innerHTML = shown.map((t) => {
-    const bg = t.thumb ? `style="background-image:url('${esc(t.thumb)}')"` : "";
-    return `<div class="gcard">
-      <div class="thumb" ${bg}>
-        <div class="pz">${PLAY_SVG}</div>
-        <span class="tag" style="color:${esc(t.accent)}">${esc(t.personaName)} · ${esc(t.langName)}</span>
-      </div>
-      <div class="body">
-        <p class="nm">${esc(prettyClip(t.clip))}</p>
-        <p class="mt">${t.sportName ? esc(t.sportName) + " · " : ""}${t.moments} moments · ${esc(t.personaName)}</p>
-      </div>
-      <div class="acts">
-        <button class="btn" data-watch="${esc(t.file)}">Watch</button>
-        <button class="btn ghost" data-share="${esc(t.file)}">Share</button>
-      </div>
-    </div>`;
-  }).join("");
+  box.innerHTML = shown.map(trackCard).join("");
+  wireCards(box);
+}
+
+const HEART = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9.3C.3 8.4 2 5 5.2 5c2 0 3.3 1.1 4.1 2.3C10.1 6.1 11.4 5 13.4 5 16.6 5 18.3 8.4 16.6 11.7 14 16.4 12 21 12 21z"/></svg>';
+const EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+function trackCard(t) {
+  const bg = t.thumb ? `style="background-image:url('${esc(t.thumb)}')"` : "";
+  const liked = likedSet().has(t.file);
+  return `<div class="gcard">
+    <div class="thumb" ${bg}>
+      <div class="pz">${PLAY_SVG}</div>
+      <span class="tag" style="color:${esc(t.accent)}">${esc(t.personaName)} · ${esc(t.langName)}</span>
+    </div>
+    <div class="body">
+      <p class="nm">${esc(prettyClip(t.clip))}</p>
+      <p class="mt">${t.sportName ? esc(t.sportName) + " · " : ""}${t.moments} moments · ${esc(t.personaName)}</p>
+    </div>
+    <div class="stats">
+      <span class="n">${EYE} ${t.views || 0}</span>
+      <button class="like ${liked ? "on" : ""}" data-like="${esc(t.file)}">${HEART} <span>${t.likes || 0}</span></button>
+    </div>
+    <div class="acts">
+      <button class="btn" data-watch="${esc(t.file)}">Watch</button>
+      <button class="btn ghost" data-share="${esc(t.file)}">Share</button>
+    </div>
+  </div>`;
+}
+function wireCards(box) {
   box.querySelectorAll("[data-watch]").forEach((b) => b.onclick = () => { go("watch"); loadTrackByFile(b.dataset.watch); });
   box.querySelectorAll("[data-share]").forEach((b) => b.onclick = () => shareTrack(b.dataset.share));
+  box.querySelectorAll("[data-like]").forEach((b) => b.onclick = () => likeTrack(b.dataset.like, b));
+}
+
+function paintFeatured() {
+  const box = $("featured"); if (!box) return;
+  const shown = state.tracks.filter((t) => t.clip)
+    .sort((a, b) => (b.views + b.likes * 3) - (a.views + a.likes * 3)).slice(0, 3);
+  if (!shown.length) { $("featuredBlock").style.display = "none"; return; }
+  $("featuredBlock").style.display = "block";
+  box.innerHTML = shown.map(trackCard).join("");
+  wireCards(box);
+}
+
+// per-browser liked set (prevents double-like from the same browser)
+function likedSet() { try { return new Set(JSON.parse(localStorage.getItem("liked") || "[]")); } catch { return new Set(); } }
+function saveLiked(s) { try { localStorage.setItem("liked", JSON.stringify([...s])); } catch {} }
+async function likeTrack(file, btn) {
+  const set = likedSet();
+  if (set.has(file)) return; // already liked from this browser
+  set.add(file); saveLiked(set);
+  btn.classList.add("on");
+  const span = btn.querySelector("span"); if (span) span.textContent = String((+span.textContent || 0) + 1);
+  try { await api("/api/track/like", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ file }) }); } catch {}
+}
+let viewedThisSession = new Set();
+function recordView(file) {
+  if (viewedThisSession.has(file)) return;
+  viewedThisSession.add(file);
+  fetch("/api/track/view", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ file }) }).catch(() => {});
 }
 function prettyClip(name) { return String(name || "").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
 

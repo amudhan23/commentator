@@ -229,6 +229,11 @@
   .gcard .body { padding:14px 15px; flex:1; display:flex; flex-direction:column; gap:4px; }
   .gcard .body .nm { font-family:Oswald,sans-serif; font-weight:600; font-size:16px; margin:0; }
   .gcard .body .mt { color:var(--muted); font-size:13px; margin:0; }
+  .gcard .stats { display:flex; gap:14px; align-items:center; padding:0 15px 8px; color:var(--muted); font-size:13px; }
+  .gcard .stats .n { display:inline-flex; align-items:center; gap:5px; }
+  .gcard .stats .like { margin-left:auto; display:inline-flex; align-items:center; gap:5px; background:transparent; border:0; color:var(--muted); cursor:pointer; font-size:13px; padding:0; }
+  .gcard .stats .like:hover, .gcard .stats .like.on { color:var(--live); }
+  .gcard .stats svg { width:15px; height:15px; }
   .gcard .acts { display:flex; gap:8px; padding:0 15px 14px; }
   .gcard .acts button { flex:1; font-size:13px; padding:8px 10px; border-radius:9px; }
   .gempty { color:var(--muted); border:1px dashed var(--line); border-radius:14px; padding:40px; text-align:center; grid-column:1/-1; }
@@ -281,6 +286,14 @@
           <div class="lower"><div class="flag" id="heroFlag">EPIC</div><div class="say"><span id="heroSay"></span><span class="cursor"></span></div></div>
         </div>
       </div>
+
+      <section class="block" id="featuredBlock" style="display:none">
+        <div class="row" style="justify-content:space-between;align-items:baseline">
+          <h2 style="margin:0">Called by the community</h2>
+          <button class="btn ghost" onclick="window.__go&&window.__go('explore')">See all →</button>
+        </div>
+        <div class="gallery" id="featured" style="margin-top:20px"></div>
+      </section>
 
       <section class="block">
         <h2>One match. One commentary. One bias.</h2>
