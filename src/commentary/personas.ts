@@ -127,7 +127,7 @@ export async function saveCustomPersona(input: {
     name: input.name.trim(),
     tagline: (input.tagline || "Custom commentator").trim(),
     style: input.style.trim(),
-    voiceId: input.voiceId?.trim() || V.antoni,
+    voiceId: input.voiceId?.trim() || V.daniel,
     accent: input.accent || "#9b6bff",
     builtIn: false,
   };
