@@ -162,6 +162,11 @@
   .hero .sub { color:var(--muted); font-size:clamp(16px,2.3vw,20px); max-width:60ch; margin:0 auto 30px; line-height:1.55; }
   .hero .cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
   .hero .cta .btn { padding:14px 26px; font-size:15px; }
+  .hero-langs { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin-top:22px; }
+  .hero-langs span { color:var(--muted); font-size:13px; margin-right:4px; }
+  .hero-langs button { background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:999px; padding:7px 15px; font-size:14px; cursor:pointer; transition:.15s; }
+  .hero-langs button:hover { border-color:var(--flood); color:var(--text); }
+  .hero-langs button.on { background:var(--flood); color:#241a00; border-color:var(--flood); font-weight:600; }
   .fade-up { opacity:0; transform:translateY(16px); animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) forwards; }
   .fade-up.d1 { animation-delay:.08s; } .fade-up.d2 { animation-delay:.16s; } .fade-up.d3 { animation-delay:.24s; } .fade-up.d4 { animation-delay:.32s; }
   @keyframes fadeUp { to { opacity:1; transform:none; } }
@@ -284,6 +289,14 @@
         <div class="cta fade-up d3">
           <button class="btn" onclick="window.__go&&window.__go('studio')">Try the demo</button>
           <button class="btn ghost" onclick="window.__go&&window.__go('watch')">Watch an example</button>
+        </div>
+        <div class="hero-langs fade-up d3" id="heroLangs">
+          <span>Hear it in</span>
+          <button data-lang="en" class="on">English</button>
+          <button data-lang="ta">தமிழ்</button>
+          <button data-lang="hi">हिन्दी</button>
+          <button data-lang="te">తెలుగు</button>
+          <button data-lang="es">Español</button>
         </div>
 
         <div class="broadcast fade-up d4">

@@ -82,31 +82,50 @@ function go(view) {
 }
 window.__go = go;
 
-// hero caption animation — the product's magic, told in one loop
+// hero caption animation — the product's magic, told in one loop.
+// Auto-cycles languages; clicking a chip pins that language (interactive demo).
 function heroAnim() {
   const say = $("heroSay"), flag = $("heroFlag");
   if (!say) return;
-  const lines = [
-    { flag: "EPIC", text: "Oh, it's there! Low into the corner — and the ground ERUPTS!" },
-    { flag: "தமிழ்", text: "அடேயப்பா! என்ன ஒரு கோல்! மைதானமே அதிர்கிறது!" },
-    { flag: "ANALYST", text: "Clever run off the last shoulder, finished clean across the keeper." },
-    { flag: "ESPAÑOL", text: "¡GOOOL! ¡Al ángulo, imposible para el arquero!" },
-    { flag: "HYPE", text: "ARE YOU KIDDING?! He's buried it — limbs everywhere!" },
-  ];
+  const LINES = {
+    en: { flag: "ENGLISH", text: "Oh, it's there! Low into the corner — and the ground ERUPTS!" },
+    ta: { flag: "தமிழ்", text: "அடேயப்பா! என்ன ஒரு கோல்! மைதானமே அதிர்கிறது!" },
+    hi: { flag: "हिन्दी", text: "क्या गोल है! कोने में — और पूरा स्टेडियम गूँज उठा!" },
+    te: { flag: "తెలుగు", text: "ఏమి గోల్! మూలలోకి — స్టేడియం దద్దరిల్లింది!" },
+    es: { flag: "ESPAÑOL", text: "¡GOOOL! ¡Al ángulo, imposible para el arquero!" },
+  };
+  const order = ["en", "ta", "hi", "te", "es"];
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let i = 0;
-  function show() {
-    const l = lines[i % lines.length];
+  let i = 0, pinned = null, token = 0;
+
+  function render(code) {
+    const l = LINES[code]; if (!l) return;
     flag.textContent = l.flag;
-    if (reduce) { say.textContent = l.text; i++; return setTimeout(show, 2800); }
+    document.querySelectorAll("#heroLangs button").forEach((x) => x.classList.toggle("on", x.dataset.lang === code));
+    const myToken = ++token;
+    if (reduce) { say.textContent = l.text; return; }
     let c = 0; say.textContent = "";
     (function type() {
+      if (myToken !== token) return; // superseded by a newer render
       say.textContent = l.text.slice(0, c++);
       if (c <= l.text.length) setTimeout(type, 26);
-      else { i++; setTimeout(show, 2400); }
     })();
   }
-  show();
+  function loop() {
+    if (pinned) return; // paused while a chip is pinned
+    render(order[i % order.length]); i++;
+    setTimeout(loop, 2600);
+  }
+  // chips
+  document.querySelectorAll("#heroLangs button").forEach((b) => {
+    b.onclick = () => {
+      document.querySelectorAll("#heroLangs button").forEach((x) => x.classList.toggle("on", x === b));
+      pinned = b.dataset.lang;
+      render(pinned);
+    };
+  });
+  render(order[0]); i = 1;
+  if (!reduce) setTimeout(loop, 2600);
 }
 
 // ---------- selects ----------
