@@ -18,6 +18,7 @@ import { MatchAgent, MemoryEntry } from "./src/agent/matchAgent.js";
 import { listPersonas, saveCustomPersona } from "./src/commentary/personas.js";
 import { LANGUAGES } from "./src/commentary/languages.js";
 import { SPORTS } from "./src/commentary/sports.js";
+import { listVoices } from "./src/voice/speak.js";
 import { buildTrack } from "./src/pipeline.js";
 
 // --- optional .env load (so zero-setup users don't need --env-file) --------
@@ -103,6 +104,15 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
       canGenerate: !!process.env.GEMINI_API_KEY,
       studioVoice: !!process.env.ELEVENLABS_API_KEY,
     });
+  }
+
+  // ---- GET /api/voices (ElevenLabs voices this key can use) ----
+  if (req.method === "GET" && url === "/api/voices") {
+    try {
+      return json(res, 200, { voices: await listVoices(), hasKey: !!process.env.ELEVENLABS_API_KEY });
+    } catch (e) {
+      return json(res, 200, { voices: [], hasKey: !!process.env.ELEVENLABS_API_KEY, error: e instanceof Error ? e.message : String(e) });
+    }
   }
 
   // ---- POST /api/personas ----

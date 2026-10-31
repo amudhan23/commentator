@@ -12,6 +12,7 @@
     "track": "tsx --env-file=.env src/pipeline.ts",
     "models": "tsx --env-file=.env src/scripts/list-models.ts",
     "try": "tsx --env-file=.env src/scripts/try-models.ts",
+    "voices": "tsx --env-file=.env src/scripts/list-voices.ts",
     "serve": "tsx serve.ts",
     "start": "tsx serve.ts"
   },
