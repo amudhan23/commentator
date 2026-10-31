@@ -28,9 +28,14 @@ async function boot() {
   $("shareBtn").onclick = shareCurrent;
   wireWaitlist();
   await refreshAll();
-  // deep link: /?t=<trackfile> opens that match in Watch
-  const t = new URLSearchParams(location.search).get("t");
-  if (t && state.tracks.some((x) => x.file === t)) { go("watch"); loadTrackByFile(t); }
+  // deep link: /?t=<trackfile>[&m=<momentIndex>] opens that match (at that moment)
+  const params = new URLSearchParams(location.search);
+  const t = params.get("t");
+  if (t && state.tracks.some((x) => x.file === t)) {
+    const m = params.get("m");
+    state.pendingMoment = m !== null ? Number(m) : null;
+    go("watch"); loadTrackByFile(t);
+  }
 }
 
 async function refreshAll() {
@@ -188,7 +193,13 @@ function setVideo(src) {
   v.src = src; v.muted = true; v.controls = true; v.classList.remove("hidden");
   $("empty").classList.add("hidden");
   state.fired = new Set();
-  v.play().catch(() => {});
+  v.onloadeddata = () => {
+    if (state.pendingMoment != null && state.manifest?.events?.[state.pendingMoment]) {
+      v.currentTime = Math.max(0, state.manifest.events[state.pendingMoment].t - 3);
+      state.pendingMoment = null;
+    }
+    v.play().catch(() => {});
+  };
 }
 
 function showEmpty(msg, localPick) {
@@ -205,12 +216,36 @@ function renderMoments() {
     const kind = (e.eventType || "").toLowerCase();
     const d = document.createElement("div");
     d.className = "moment"; d.id = `m-${i}`;
-    d.innerHTML = `<div class="head"><span class="time mono-num">${fmt(e.t)}</span><span class="chip ${kind}">${esc(e.eventType || "moment")}</span></div>
+    d.innerHTML = `<div class="head"><span class="time mono-num">${fmt(e.t)}</span><span class="chip ${kind}">${esc(e.eventType || "moment")}</span>
+        <span class="macts">
+          <button class="micro" data-mshare="${i}" title="Share this moment">Share</button>
+          <button class="micro" data-mclip="${i}" title="Make a shareable clip">Clip</button>
+        </span>
+      </div>
       ${e.saw ? `<p class="saw"><b>Saw:</b> ${esc(e.saw)}</p>` : ""}
       <p class="said">${esc(e.text)}</p>`;
-    d.onclick = () => { const v = $("video"); if (v.src) { v.currentTime = Math.max(0, e.t - 2); v.play().catch(() => {}); } };
+    d.onclick = (ev) => { if (ev.target.closest(".micro")) return; const v = $("video"); if (v.src) { v.currentTime = Math.max(0, e.t - 2); v.play().catch(() => {}); } };
     box.appendChild(d);
   });
+  box.querySelectorAll("[data-mshare]").forEach((b) => b.onclick = (ev) => { ev.stopPropagation(); shareMoment(+b.dataset.mshare); });
+  box.querySelectorAll("[data-mclip]").forEach((b) => b.onclick = (ev) => { ev.stopPropagation(); makeMomentClip(+b.dataset.mclip, b); });
+}
+
+function shareMoment(i) {
+  if (!state.manifestFile) return;
+  const url = `${location.origin}/?t=${encodeURIComponent(state.manifestFile)}&m=${i}`;
+  copy(url, () => toast("Moment link copied"));
+}
+
+async function makeMomentClip(i, btn) {
+  const label = btn.textContent;
+  btn.textContent = "…"; btn.disabled = true;
+  try {
+    const j = await api("/api/clip", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ file: state.manifestFile, index: i }) });
+    if (j.url) { const a = document.createElement("a"); a.href = j.url; a.download = ""; a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove(); toast("Clip ready — downloading"); }
+    else toast(j.error || "Clip failed");
+  } catch { toast("Clip failed"); }
+  finally { btn.textContent = label; btn.disabled = false; }
 }
 
 function onTime() {

@@ -20,6 +20,7 @@ import { LANGUAGES } from "./src/commentary/languages.js";
 import { SPORTS } from "./src/commentary/sports.js";
 import { listVoices } from "./src/voice/speak.js";
 import { allStats, bump } from "./src/stats.js";
+import { makeClip } from "./src/clip.js";
 import { buildTrack } from "./src/pipeline.js";
 
 // --- optional .env load (so zero-setup users don't need --env-file) --------
@@ -179,6 +180,33 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
       send({ type: "error", message: e instanceof Error ? e.message : String(e) });
     }
     return res.end();
+  }
+
+  // ---- POST /api/clip  { file, index } -> a shareable MP4 of one moment ----
+  if (req.method === "POST" && url === "/api/clip") {
+    try {
+      const { file, index } = JSON.parse(await readBody(req) || "{}");
+      const name = safeName(String(file || ""));
+      const m = JSON.parse(await readFile(join(TRACKS, name), "utf8"));
+      const ev = (m.events || [])[Number(index)];
+      if (!ev || !m.clip) return json(res, 400, { error: "moment or clip not found" });
+      const videoPath = join(CLIPS, safeName(m.clip));
+      if (!existsSync(videoPath)) return json(res, 400, { error: "source clip missing" });
+      const audioPath = ev.audio ? join(ROOT, safe(ev.audio)) : null;
+
+      const outDir = join(ROOT, "moments");
+      await mkdir(outDir, { recursive: true });
+      const outName = `${name.replace(/\.json$/, "")}.${index}.mp4`;
+      await makeClip({
+        videoPath,
+        audioPath: audioPath && existsSync(audioPath) ? audioPath : null,
+        tSeconds: Number(ev.t) || 0,
+        outPath: join(outDir, outName),
+      });
+      return json(res, 200, { url: `moments/${outName}` });
+    } catch (e) {
+      return json(res, 500, { error: e instanceof Error ? e.message : String(e) });
+    }
   }
 
   // ---- POST /api/waitlist ----
