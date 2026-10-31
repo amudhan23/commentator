@@ -23,13 +23,13 @@ export interface Persona {
   builtIn: boolean;
 }
 
-// Classic ElevenLabs preset voice ids (in most accounts' default library).
+// Current ElevenLabs default-library voice ids (present on new accounts).
+// Run `npm run voices` to see yours; override per-commentator in the UI.
 const V = {
-  adam: "pNInz6obpgDQGcFmaJgB",    // deep, dramatic
-  antoni: "ErXwobaYiN019PkySvjV",  // warm, measured
-  josh: "TxGEqnHWrfWFTfGW9XjX",    // young, energetic
-  rachel: "21m00Tcm4TlvDq8ikWAM",  // clear, neutral
-  arnold: "VR6AewLTigWG4xSOukaG",  // bold, booming
+  adam: "pNInz6obpgDQGcFmaJgB",      // Adam — dominant, firm (epic)
+  daniel: "onwK4e9ZLuTAKqWW03F9",    // Daniel — steady British broadcaster (analyst)
+  charlie: "IKne3meq5aSn9XLyUdCD",   // Charlie — deep, confident, energetic (hype)
+  river: "SAz9YHcvj6GT2YYXdXww",     // River — relaxed, neutral, informative (neutral)
 };
 
 export const BUILT_IN: Persona[] = [
@@ -51,7 +51,7 @@ export const BUILT_IN: Persona[] = [
     style:
       "A sharp, calm football analyst. Explain what just happened and why it matters tactically, " +
       "in plain language. One or two sentences, no hype, no preamble.",
-    voiceId: V.antoni,
+    voiceId: V.daniel,
     accent: "#49a7ff",
     builtIn: true,
   },
@@ -62,7 +62,7 @@ export const BUILT_IN: Persona[] = [
     style:
       "A high-energy hype commentator. Explosive, modern, fan-in-the-stands energy. Short, loud, " +
       "exclamatory reactions to the moment. One or two sentences, no preamble.",
-    voiceId: V.josh,
+    voiceId: V.charlie,
     accent: "#ff4777",
     builtIn: true,
   },
@@ -73,7 +73,7 @@ export const BUILT_IN: Persona[] = [
     style:
       "A concise football commentator. State what happened clearly in one sentence. " +
       "No embellishment, no preamble.",
-    voiceId: V.rachel,
+    voiceId: V.river,
     accent: "#8d9bac",
     builtIn: true,
   },
