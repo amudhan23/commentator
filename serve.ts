@@ -19,6 +19,7 @@ import { listPersonas, saveCustomPersona } from "./src/commentary/personas.js";
 import { LANGUAGES } from "./src/commentary/languages.js";
 import { SPORTS } from "./src/commentary/sports.js";
 import { listVoices } from "./src/voice/speak.js";
+import { allStats, bump } from "./src/stats.js";
 import { buildTrack } from "./src/pipeline.js";
 
 // --- optional .env load (so zero-setup users don't need --env-file) --------
@@ -78,21 +79,37 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
   if (req.method === "GET" && url === "/api/tracks") {
     await mkdir(TRACKS, { recursive: true });
     const files = (await readdir(TRACKS)).filter((f) => f.endsWith(".json"));
+    const stats = await allStats();
     const tracks = [];
     for (const f of files) {
       try {
         const m = JSON.parse(await readFile(join(TRACKS, f), "utf8"));
+        const s = stats[f] ?? { views: 0, likes: 0 };
         tracks.push({
           file: f, clip: m.clip ?? null, thumb: m.thumb ?? null, persona: m.persona,
           personaName: m.personaName ?? m.persona, accent: m.accent ?? "#ffb020",
           sport: m.sport ?? null, sportName: m.sportName ?? null,
           langSlug: m.langSlug, langName: m.langName ?? m.langSlug,
           moments: (m.events || []).length, generatedAt: m.generatedAt ?? null,
+          views: s.views, likes: s.likes,
         });
       } catch { /* skip malformed */ }
     }
     tracks.sort((a, b) => String(b.generatedAt).localeCompare(String(a.generatedAt)));
     return json(res, 200, { tracks });
+  }
+
+  // ---- POST /api/track/view  and  /api/track/like ----
+  if (req.method === "POST" && (url === "/api/track/view" || url === "/api/track/like")) {
+    try {
+      const { file } = JSON.parse(await readBody(req) || "{}");
+      const name = safeName(String(file || ""));
+      if (!name || !existsSync(join(TRACKS, name))) return json(res, 400, { error: "unknown track" });
+      const stat = await bump(name, url.endsWith("view") ? "views" : "likes");
+      return json(res, 200, stat);
+    } catch (e) {
+      return json(res, 500, { error: e instanceof Error ? e.message : String(e) });
+    }
   }
 
   // ---- GET /api/personas ----
