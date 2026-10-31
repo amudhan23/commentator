@@ -36,6 +36,9 @@ const CLIPS = join(ROOT, "clips");
 const TRACKS = join(ROOT, "tracks");
 const PORT = Number(process.env.PORT) || 5173;
 const VIDEO_EXT = new Set([".mp4", ".webm", ".mov", ".mkv", ".m4v"]);
+const MAX_UPLOAD = Number(process.env.MAX_UPLOAD_MB || 300) * 1024 * 1024;
+const MAX_JOBS = Number(process.env.MAX_CONCURRENT_JOBS || 2);
+let activeJobs = 0;
 const TYPES: Record<string, string> = {
   ".html": "text/html", ".js": "text/javascript", ".json": "application/json",
   ".mp3": "audio/mpeg", ".css": "text/css", ".mp4": "video/mp4", ".webm": "video/webm",
@@ -45,9 +48,19 @@ const TYPES: Record<string, string> = {
 
 const server = createServer(async (req, res) => {
   try {
-    const url = (req.url || "/").split("?")[0];
+    const raw = req.url || "/";
+    const url = raw.split("?")[0];
+    const query = new URLSearchParams(raw.split("?")[1] || "");
 
     if (url.startsWith("/api/")) return await api(req, res, url);
+
+    // The home page with ?t=<track>: rewrite social-preview tags so a shared
+    // match link previews the actual match (thumbnail + title), not the generic
+    // card. This is the growth loop — a shared link that looks like the match.
+    if ((url === "/" || url === "/index.html") && query.get("t")) {
+      const html = await ogForTrack(req, safeName(String(query.get("t"))));
+      if (html) { res.writeHead(200, { "content-type": "text/html" }); return res.end(html); }
+    }
 
     // static
     let path = decodeURIComponent(url);
@@ -61,6 +74,30 @@ const server = createServer(async (req, res) => {
     res.end("not found");
   }
 });
+
+/** Build index.html with per-track Open Graph tags, or null to fall through. */
+async function ogForTrack(req: IncomingMessage, trackFile: string): Promise<string | null> {
+  try {
+    const m = JSON.parse(await readFile(join(TRACKS, trackFile), "utf8"));
+    const proto = (req.headers["x-forwarded-proto"] as string) || "http";
+    const base = `${proto}://${req.headers.host}`;
+    const pretty = String(m.clip || "a match").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ");
+    const title = `${pretty} — called in ${m.langName || "your language"} by ${m.personaName || "Commentator"}`;
+    const img = m.thumb ? `${base}/${m.thumb}` : `${base}/og.png`;
+    const desc = `AI commentary on ${pretty}, in ${m.langName || "your language"}. Watch it called your way on Commentator.`;
+    let html = await readFile(join(ROOT, "index.html"), "utf8");
+    html = html
+      .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${attr(title)}" />`)
+      .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${attr(desc)}" />`)
+      .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${attr(img)}" />\n<meta property="og:url" content="${attr(base)}/?t=${encodeURIComponent(trackFile)}" />`)
+      .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${attr(title)}" />`)
+      .replace(/<meta name="twitter:image"[^>]*>/, `<meta name="twitter:image" content="${attr(img)}" />`);
+    return html;
+  } catch {
+    return null;
+  }
+}
+function attr(s: string): string { return s.replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
 
 async function api(req: IncomingMessage, res: ServerResponse, url: string) {
   // ---- GET /api/health (for uptime checks / platforms) ----
@@ -148,10 +185,14 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
   if (req.method === "POST" && url === "/api/upload") {
     const name = safeName(String(req.headers["x-filename"] || "clip.mp4"));
     if (!VIDEO_EXT.has(extname(name).toLowerCase())) return json(res, 400, { error: "Not a video file." });
-    await mkdir(CLIPS, { recursive: true });
-    const buf = await readRawBody(req);
-    await writeFile(join(CLIPS, name), buf);
-    return json(res, 200, { name, size: buf.length });
+    try {
+      await mkdir(CLIPS, { recursive: true });
+      const buf = await readRawBody(req);
+      await writeFile(join(CLIPS, name), buf);
+      return json(res, 200, { name, size: buf.length });
+    } catch (e) {
+      return json(res, 413, { error: e instanceof Error ? e.message : "Upload failed" });
+    }
   }
 
   // ---- POST /api/process (SSE progress) ----
@@ -161,7 +202,9 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
     const clipPath = join(CLIPS, clip);
     if (!clip || !existsSync(clipPath)) return json(res, 400, { error: "Clip not found. Upload it first." });
     if (!process.env.GEMINI_API_KEY) return json(res, 400, { error: "Set GEMINI_API_KEY in .env to generate commentary." });
+    if (activeJobs >= MAX_JOBS) return json(res, 429, { error: "Busy — a few matches are being called right now. Try again in a moment." });
 
+    activeJobs++;
     res.writeHead(200, {
       "content-type": "text/event-stream", "cache-control": "no-cache", connection: "keep-alive",
     });
@@ -179,6 +222,8 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
       });
     } catch (e) {
       send({ type: "error", message: e instanceof Error ? e.message : String(e) });
+    } finally {
+      activeJobs--;
     }
     return res.end();
   }
@@ -272,7 +317,12 @@ function readBody(req: IncomingMessage): Promise<string> {
 function readRawBody(req: IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on("data", (c: Buffer) => chunks.push(c));
+    let size = 0;
+    req.on("data", (c: Buffer) => {
+      size += c.length;
+      if (size > MAX_UPLOAD) { req.destroy(); reject(new Error(`Upload too large (max ${Math.round(MAX_UPLOAD / 1048576)} MB)`)); return; }
+      chunks.push(c);
+    });
     req.on("end", () => resolve(Buffer.concat(chunks)));
     req.on("error", reject);
   });

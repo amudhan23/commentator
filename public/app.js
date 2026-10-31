@@ -379,9 +379,17 @@ const PLAY_SVG = '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r
 function paintGallery() {
   const box = $("gallery");
   const shown = state.tracks.filter((t) => t.clip); // real generated matches
+  const sum = $("exploreSummary");
   if (!shown.length) {
+    if (sum) sum.textContent = "";
     box.innerHTML = `<div class="gempty">No matches called yet. <b>Open the Studio</b>, upload a clip, and be the first.</div>`;
     return;
+  }
+  if (sum) {
+    const views = shown.reduce((a, t) => a + (t.views || 0), 0);
+    const likes = shown.reduce((a, t) => a + (t.likes || 0), 0);
+    const langs = new Set(shown.map((t) => t.langSlug)).size;
+    sum.textContent = `${shown.length} matches · ${langs} languages · ${views.toLocaleString()} views · ${likes.toLocaleString()} likes`;
   }
   box.innerHTML = shown.map(trackCard).join("");
   wireCards(box);
