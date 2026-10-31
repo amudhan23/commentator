@@ -12,7 +12,7 @@
 
 import { createServer, IncomingMessage, ServerResponse } from "node:http";
 import { readFile, readdir, mkdir, writeFile, stat } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, createReadStream } from "node:fs";
 import { extname, join, normalize, basename } from "node:path";
 import { MatchAgent, MemoryEntry } from "./src/agent/matchAgent.js";
 import { listPersonas, saveCustomPersona } from "./src/commentary/personas.js";
@@ -66,18 +66,44 @@ const server = createServer(async (req, res) => {
       if (html) { res.writeHead(200, { "content-type": "text/html" }); return res.end(html); }
     }
 
-    // static
+    // static (with HTTP Range support so video seeking/scrubbing works)
     let path = decodeURIComponent(url);
     if (path === "/") path = "/index.html";
     const file = join(ROOT, safe(path));
-    const data = await readFile(file);
-    res.writeHead(200, { "content-type": TYPES[extname(file)] || "application/octet-stream" });
-    res.end(data);
+    await serveFile(req, res, file);
   } catch {
-    res.writeHead(404, { "content-type": "text/plain" });
+    if (!res.headersSent) { res.writeHead(404, { "content-type": "text/plain" }); }
     res.end("not found");
   }
 });
+
+/** Serve a file, honoring the Range header (required for video seek/scrub). */
+async function serveFile(req: IncomingMessage, res: ServerResponse, file: string) {
+  const st = await stat(file); // throws if missing -> caught as 404
+  const type = TYPES[extname(file)] || "application/octet-stream";
+  const range = req.headers.range;
+  if (range) {
+    const m = /bytes=(\d*)-(\d*)/.exec(range);
+    let start = m && m[1] ? parseInt(m[1], 10) : 0;
+    let end = m && m[2] ? parseInt(m[2], 10) : st.size - 1;
+    if (isNaN(start)) start = 0;
+    if (isNaN(end) || end >= st.size) end = st.size - 1;
+    if (start > end || start >= st.size) {
+      res.writeHead(416, { "Content-Range": `bytes */${st.size}` });
+      return res.end();
+    }
+    res.writeHead(206, {
+      "Content-Type": type,
+      "Content-Range": `bytes ${start}-${end}/${st.size}`,
+      "Accept-Ranges": "bytes",
+      "Content-Length": end - start + 1,
+    });
+    createReadStream(file, { start, end }).pipe(res);
+    return;
+  }
+  res.writeHead(200, { "Content-Type": type, "Content-Length": st.size, "Accept-Ranges": "bytes" });
+  createReadStream(file).pipe(res);
+}
 
 /** Build index.html with per-track Open Graph tags, or null to fall through. */
 async function ogForTrack(req: IncomingMessage, trackFile: string): Promise<string | null> {
