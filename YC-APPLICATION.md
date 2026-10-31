@@ -33,7 +33,7 @@ This also lands us squarely inside YC's current Request for Startups,
 ## Company
 
 - **Name:** Commentator
-- **URL:** https://github.com/amudhan23/commentator  (live demo: [your-deploy-url])
+- **URL:** https://github.com/amudhan23/commentator  (live demo: https://commentator.onrender.com)
 
 ### Describe what your company does in 50 characters or less.
 Primary (recommended):
@@ -142,13 +142,16 @@ We'll replace it with real numbers from the first cohort of fans.)
 
 ## How far along are you? / traction
 
-[Be honest and specific.] Working product: an AI agent that watches a real match,
-calls it in multiple languages and styles, with a live web app (Studio to generate,
-Watch to view, Explore to share, create-your-own commentators). Deploying this week
-at [url]. [Before you submit: put it in front of 5–20 real fans — e.g., a cricket
-WhatsApp/Discord group — and report what they did. YC's own advice: ship a small
-version to a handful of real users first. Even "20 fans watched a match in Tamil,
-N came back" beats a polished deck.]
+[Be honest and specific.] Working product, live at **https://commentator.onrender.com**:
+an AI agent that watches a real match and calls it in 15 languages and multiple
+styles, with a full web app — Studio to generate, Watch to view with synced voice and
+captions, Explore to share, and create-your-own commentators. The Tamil/Telugu cricket
+commentary is fluent and grounded in the actual footage. Built and shipped solo this
+week. [Before you submit, put it in front of 5–20 real fans — a cricket WhatsApp/Discord
+group — and report what they did; YC's own advice is to ship to a handful of real users
+first, and even "20 fans watched a match in Tamil, N came back" beats a polished deck.
+If you don't get there in time, say plainly that it's a working prototype pre-first-users
+— honesty scores on the trustworthiness and self-awareness axes; don't invent traction.]
 
 ---
 

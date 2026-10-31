@@ -51,26 +51,26 @@ weren't my first, I'm multilingual, and I can build the hard part: real-time vid
 understanding and low-latency delivery is systems work — my background ([3.5 yrs
 production engineering at IBM], MSCS from NYU Courant, payments infra at Sahara AI,
 **3x hackathon winner**). I've shipped the entire working product — agent, pipeline,
-and app — myself. Live: [your-deploy-url] · code: github.com/amudhan23/commentator
+and app — myself. Live: https://commentator.onrender.com · code: github.com/amudhan23/commentator
 
 *(One or two sentences on founder-market fit + proof you out-build. You're solo —
 Speedrun accepts that when you have the building capability, and shipping the whole
 thing yourself is exactly that signal. If you find a cofounder, add them.)*
 
-## 5. What is working?  ← THE ONE THAT NEEDS A NUMBER TODAY
+## 5. What is working?
 
-[This is the make-or-break answer. Qualitative = "no traction" to them. Fill with
-HARD numbers you can get in the next few hours — see the plan below. Example of the
-shape, replace with real figures:]
+The product works end to end, live right now: **https://commentator.onrender.com**.
+Upload or point it at a match, and the agent watches the real footage, finds the
+moments, and calls them in your language and voice. I've generated grounded
+commentary across 15 languages — the Tamil and Telugu cricket calls are fluent and
+tied to what's actually on screen, not canned hype. Try it: call a clip in Tamil and
+compare it to the default feed.
 
-> Working product, live at [url]. I put it in front of [N] cricket fans in
-> [a Tamil cricket WhatsApp/Discord group] this week: they watched [X] matches called
-> in Tamil, [Z] said they'd use it over the default feed, and [k]% came back for a
-> second. I've generated commentary across [Y] languages grounded in real match video.
-
-Minimum viable version if you get nothing else: "Product is live and working end to
-end; the agent watches real match footage and calls it in [N] languages — try it at
-[url]." A working link they can click beats any adjective.
+[If you get any real fans on it before you submit, add one hard line here, e.g.:
+"I put it in front of N fans in a Tamil cricket group this week — X called a match in
+their language, Z said they'd use it over the default feed." Even a handful makes this
+answer much stronger. If not, the working link above still beats any adjective —
+don't fake a number.]
 
 ---
 
