@@ -18,5 +18,7 @@ services:
       - key: ELEVENLABS_API_KEY
         sync: false          # optional; set in the dashboard
     # Uploaded clips + generated tracks are written to disk. On the starter
-    # plan that disk is ephemeral (resets on deploy). For persistence, attach
-    # a Render Disk mounted at /app/public and it survives restarts.
+    # plan that disk is ephemeral — it resets on each deploy. That is fine for
+    # a demo. Do NOT naively mount a Render Disk at /app/public: it would hide
+    # the committed index.html/app.js and break the site. Real persistence
+    # needs the generated media moved out of public/ first (app change).

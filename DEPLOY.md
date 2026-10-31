@@ -15,8 +15,11 @@ You need one secret: **`GEMINI_API_KEY`**. `ELEVENLABS_API_KEY` is optional
 3. Set `GEMINI_API_KEY` (and optionally `ELEVENLABS_API_KEY`) in the dashboard.
 4. Deploy. Your site is live at `https://<name>.onrender.com`.
 
-For persistent uploads/tracks across deploys, attach a **Render Disk** mounted
-at `/app/public`.
+On the starter plan the disk is ephemeral — generated clips and view/like
+counts reset on each redeploy. That is fine for a demo. (Do **not** mount a
+Render Disk at `/app/public` to fix this: it would hide the committed
+`index.html`/`app.js` and break the site. True persistence needs the
+generated media moved out of `public/` first — an app change, not a setting.)
 
 ## Railway
 
