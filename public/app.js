@@ -23,6 +23,7 @@ async function boot() {
   wireNav();
   wireWatch();
   wireStudio();
+  wireLive();
   wireCommentators();
   heroAnim();
   $("shareBtn").onclick = shareCurrent;
@@ -138,6 +139,7 @@ function paintSelects() {
   $("studioLang").innerHTML = langOpts;
   const sportSel = $("studioSport");
   if (sportSel) sportSel.innerHTML = state.sports.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
+  paintLiveSelects();
 }
 
 function paintClipList() {
@@ -367,6 +369,89 @@ async function generate() {
 }
 function addFeed(t, text, skip) { const d = document.createElement("div"); d.className = "line" + (skip ? " skip" : ""); d.innerHTML = `<span class="t mono-num">${t ? fmt(t) : ""}</span><span>${esc(text)}</span>`; $("feed").appendChild(d); $("feed").scrollTop = $("feed").scrollHeight; }
 function bar(seen, total) { $("progCount").textContent = `${seen}/${total}`; $("progBar").style.width = `${Math.round((seen / Math.max(1, total)) * 100)}%`; }
+
+// ---------- LIVE ----------
+const live = { stream: null, timer: null, busy: false, recent: [], lastSpoke: 0 };
+function wireLive() {
+  $("liveStart").onclick = startLive;
+  $("liveStop").onclick = stopLive;
+}
+function paintLiveSelects() {
+  $("liveSport").innerHTML = state.sports.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
+  $("livePersona").innerHTML = state.personas.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
+  $("liveLang").innerHTML = state.languages.map((l) => `<option value="${l.slug}">${esc(l.name)}</option>`).join("");
+}
+async function startLive() {
+  if (!state.canGenerate) { $("liveStatus").textContent = "Live needs a Gemini key on the server (the deploy's key). Add one to use it."; return; }
+  try {
+    live.stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 15 }, audio: false });
+  } catch { $("liveStatus").textContent = "Screen share was cancelled or blocked."; return; }
+  const v = $("liveVideo");
+  v.srcObject = live.stream; v.classList.remove("hidden"); $("liveEmpty").classList.add("hidden");
+  v.play().catch(() => {});
+  $("liveBadge").classList.add("on");
+  $("liveStart").classList.add("hidden"); $("liveStop").classList.remove("hidden");
+  $("liveStatus").textContent = "Live — the agent is watching. Commentary lands a few seconds behind the action.";
+  live.recent = [];
+  live.stream.getVideoTracks()[0].addEventListener("ended", stopLive); // user hit browser "stop sharing"
+  live.timer = setInterval(liveTick, 7000);
+  setTimeout(liveTick, 1500);
+}
+function stopLive() {
+  if (live.timer) clearInterval(live.timer);
+  live.timer = null;
+  live.stream?.getTracks().forEach((t) => t.stop());
+  live.stream = null;
+  $("liveVideo").classList.add("hidden"); $("liveEmpty").classList.remove("hidden");
+  $("liveBadge").classList.remove("on"); $("liveThird").classList.remove("show");
+  $("liveStart").classList.remove("hidden"); $("liveStop").classList.add("hidden");
+  $("liveStatus").textContent = "Stopped.";
+}
+const liveCanvas = document.createElement("canvas");
+function grabFrame() {
+  const v = $("liveVideo");
+  if (!v.videoWidth) return null;
+  const w = 640, h = Math.round((v.videoHeight / v.videoWidth) * 640) || 360;
+  liveCanvas.width = w; liveCanvas.height = h;
+  liveCanvas.getContext("2d").drawImage(v, 0, 0, w, h);
+  return liveCanvas.toDataURL("image/jpeg", 0.6);
+}
+async function liveTick() {
+  if (live.busy || !live.stream) return;
+  const f1 = grabFrame(); if (!f1) return;
+  await new Promise((r) => setTimeout(r, 400));
+  const f2 = grabFrame();
+  live.busy = true;
+  try {
+    const r = await api("/api/live", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ frames: [f1, f2].filter(Boolean), sport: $("liveSport").value, persona: $("livePersona").value, langSlug: $("liveLang").value, recent: live.recent }) });
+    if (r.notable && r.commentary && Date.now() - live.lastSpoke > 6000) {
+      live.lastSpoke = Date.now();
+      live.recent.push(r.commentary); if (live.recent.length > 5) live.recent.shift();
+      liveSpeak(r.commentary, r.bcp47);
+      liveShowThird(r.eventType, r.commentary);
+      liveLog(r.eventType, r.commentary);
+    }
+  } catch { /* ignore a dropped tick */ }
+  finally { live.busy = false; }
+}
+let liveThirdT;
+function liveShowThird(type, text) {
+  $("liveFlag").textContent = (type && type !== "nothing") ? String(type).toUpperCase() : "LIVE";
+  $("liveSay").textContent = text;
+  $("liveThird").classList.add("show");
+  clearTimeout(liveThirdT); liveThirdT = setTimeout(() => $("liveThird").classList.remove("show"), 6000);
+}
+function liveSpeak(text, bcp47) {
+  try { const u = new SpeechSynthesisUtterance(text); u.lang = bcp47 || "en-US"; u.rate = 1.07; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch {}
+}
+function liveLog(type, text) {
+  const d = document.createElement("div");
+  d.className = "moment";
+  const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  d.innerHTML = `<div class="head"><span class="time mono-num">${now}</span><span class="chip ${String(type).toLowerCase()}">${esc(type || "moment")}</span></div><p class="said">${esc(text)}</p>`;
+  $("liveLog").prepend(d);
+}
 
 // ---------- COMMENTATORS ----------
 function wireCommentators() {

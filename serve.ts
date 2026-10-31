@@ -21,6 +21,10 @@ import { SPORTS } from "./src/commentary/sports.js";
 import { listVoices } from "./src/voice/speak.js";
 import { allStats, bump } from "./src/stats.js";
 import { makeClip } from "./src/clip.js";
+import { callLive } from "./src/vision/live.js";
+import { sportById } from "./src/commentary/sports.js";
+import { getPersona } from "./src/commentary/personas.js";
+import { langBySlug } from "./src/commentary/languages.js";
 import { buildTrack } from "./src/pipeline.js";
 
 // --- optional .env load (so zero-setup users don't need --env-file) --------
@@ -226,6 +230,26 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
       activeJobs--;
     }
     return res.end();
+  }
+
+  // ---- POST /api/live  { frames:[b64], sport, persona, langSlug, recent:[] } ----
+  if (req.method === "POST" && url === "/api/live") {
+    try {
+      if (!process.env.GEMINI_API_KEY) return json(res, 400, { error: "Set GEMINI_API_KEY to use live mode." });
+      const body = JSON.parse(await readBody(req) || "{}");
+      const persona = await getPersona(String(body.persona || "drury"));
+      const sport = sportById(String(body.sport || "football"));
+      const lang = langBySlug(String(body.langSlug || "en"));
+      const frames = (Array.isArray(body.frames) ? body.frames : []).map((f: string) => String(f).replace(/^data:image\/\w+;base64,/, ""));
+      const r = await callLive(frames, {
+        style: persona.style, language: lang.name,
+        sportAnalyst: sport.analyst, sportEvents: sport.events,
+        recent: Array.isArray(body.recent) ? body.recent : [],
+      });
+      return json(res, 200, { ...r, bcp47: lang.bcp47 });
+    } catch (e) {
+      return json(res, 500, { error: e instanceof Error ? e.message : String(e) });
+    }
   }
 
   // ---- POST /api/clip  { file, index } -> a shareable MP4 of one moment ----

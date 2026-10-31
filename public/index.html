@@ -272,6 +272,7 @@
       <button data-view="home" class="active">Home</button>
       <button data-view="explore">Explore</button>
       <button data-view="watch">Watch</button>
+      <button data-view="live">Live</button>
       <button data-view="studio">Studio</button>
       <button data-view="commentators">Commentators</button>
     </nav>
@@ -421,6 +422,36 @@
           <div class="suggest" id="suggest"></div>
           <div id="qa" class="qa"></div>
         </section>
+      </div>
+    </section>
+
+    <!-- LIVE -->
+    <section id="view-live" class="view">
+      <h1 class="title">Live <span style="font-size:13px;color:var(--flood);border:1px solid rgba(255,176,32,.3);background:rgba(255,176,32,.07);padding:3px 10px;border-radius:999px;vertical-align:middle;margin-left:8px">beta</span></h1>
+      <p class="lead">Watching a match right now? Share your screen and the agent calls it live, in your language — a few seconds behind the action. (Near-real-time companion; true broadcast-latency live is on the roadmap.)</p>
+
+      <div class="row" style="margin-bottom:16px">
+        <div class="ctl"><span>Sport</span><select id="liveSport"></select></div>
+        <div class="ctl"><span>Commentator</span><select id="livePersona"></select></div>
+        <div class="ctl"><span>Language</span><select id="liveLang"></select></div>
+        <button id="liveStart" class="btn">Start — share your screen</button>
+        <button id="liveStop" class="btn ghost hidden">Stop</button>
+      </div>
+
+      <div class="stage">
+        <div id="liveEmpty" class="empty">
+          <div class="big">Not capturing yet</div>
+          <div>Open the match in another tab or window, hit <b>Start</b>, and pick that tab to share. Keep this tab visible.</div>
+        </div>
+        <video id="liveVideo" playsinline muted class="hidden"></video>
+        <div id="liveBadge" class="mode"><span class="pip" style="background:var(--live)"></span><span>LIVE</span></div>
+        <div id="liveThird" class="third"><div class="flag" id="liveFlag">LIVE</div><div class="say" id="liveSay"></div></div>
+      </div>
+      <p id="liveStatus" class="hint"></p>
+
+      <div class="panel" style="margin-top:22px">
+        <h3>Called moments</h3>
+        <div id="liveLog"></div>
       </div>
     </section>
 
