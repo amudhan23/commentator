@@ -401,8 +401,9 @@ async function startLive() {
   $("liveStatus").textContent = "Live — the agent is watching. Commentary lands a few seconds behind the action.";
   live.recent = [];
   live.stream.getVideoTracks()[0].addEventListener("ended", stopLive); // user hit browser "stop sharing"
-  live.timer = setInterval(liveTick, 7000);
-  setTimeout(liveTick, 1500);
+  live.lastSig = null; live.lastCall = 0;
+  live.timer = setInterval(liveTick, 3000); // poll fast; scene-detect skips static frames
+  setTimeout(liveTick, 1200);
 }
 function stopLive() {
   if (live.timer) clearInterval(live.timer);
@@ -423,16 +424,41 @@ function grabFrame() {
   liveCanvas.getContext("2d").drawImage(v, 0, 0, w, h);
   return liveCanvas.toDataURL("image/jpeg", 0.6);
 }
+// Cheap scene signature: tiny grayscale thumbnail, used to skip the vision
+// call when the screen barely changed (paused, a static graphic, a timeout).
+const sigCanvas = document.createElement("canvas"); sigCanvas.width = 32; sigCanvas.height = 18;
+function sceneSig() {
+  const v = $("liveVideo");
+  if (!v.videoWidth) return null;
+  const c = sigCanvas.getContext("2d", { willReadFrequently: true });
+  c.drawImage(v, 0, 0, 32, 18);
+  const d = c.getImageData(0, 0, 32, 18).data;
+  const g = new Uint8Array(32 * 18);
+  for (let i = 0, j = 0; i < d.length; i += 4, j++) g[j] = (d[i] * 3 + d[i + 1] * 6 + d[i + 2]) / 10;
+  return g;
+}
+function sigDiff(a, b) {
+  if (!a || !b) return 999;
+  let s = 0; for (let i = 0; i < a.length; i++) s += Math.abs(a[i] - b[i]);
+  return s / a.length; // mean per-pixel brightness change, 0..255
+}
 async function liveTick() {
   if (live.busy || !live.stream) return;
+  // Skip the vision call if the scene is nearly static — unless it's been a
+  // while (heartbeat), so we don't poll a frozen screen but still re-check.
+  const sig = sceneSig();
+  const changed = sigDiff(sig, live.lastSig) > 6;           // ~scene/action change
+  const stale = Date.now() - (live.lastCall || 0) > 11000;   // heartbeat
+  if (!changed && !stale) return;
+  live.lastSig = sig; live.lastCall = Date.now();
   const f1 = grabFrame(); if (!f1) return;
-  await new Promise((r) => setTimeout(r, 400));
+  await new Promise((r) => setTimeout(r, 250));
   const f2 = grabFrame();
   live.busy = true;
   try {
     const r = await api("/api/live", { method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ frames: [f1, f2].filter(Boolean), sport: $("liveSport").value, persona: $("livePersona").value, langSlug: $("liveLang").value, recent: live.recent }) });
-    if (r.notable && r.commentary && Date.now() - live.lastSpoke > 6000) {
+    if (r.notable && r.commentary && Date.now() - live.lastSpoke > 3500) {
       live.lastSpoke = Date.now();
       live.recent.push(r.commentary); if (live.recent.length > 5) live.recent.shift();
       liveSpeak(r.commentary, r.bcp47);

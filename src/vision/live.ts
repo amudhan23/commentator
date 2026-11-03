@@ -40,8 +40,10 @@ export async function callLive(
     'Return ONLY JSON: {"notable": boolean, "eventType": string, "commentary": string}',
   ].filter(Boolean).join("\n");
 
-  const parts = [prompt, ...framesB64.slice(0, 3).map((b) => imagePart(b))];
-  const text = await geminiText(system, parts, 600);
+  // Live wants speed: one short line, so cap output tight (fewer tokens =
+  // faster generation = less lag behind the action).
+  const parts = [prompt, ...framesB64.slice(0, 2).map((b) => imagePart(b))];
+  const text = await geminiText(system, parts, 220);
   return parse(text);
 }
 
