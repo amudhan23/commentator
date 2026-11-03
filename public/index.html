@@ -527,18 +527,22 @@
       <h1 class="title">Live <span style="font-size:13px;color:var(--flood);border:1px solid rgba(255,176,32,.3);background:rgba(255,176,32,.07);padding:3px 10px;border-radius:999px;vertical-align:middle;margin-left:8px">beta</span></h1>
       <p class="lead">Watching a match right now? Share your screen and the agent calls it live, in your language — a few seconds behind the action. (Near-real-time companion; true broadcast-latency live is on the roadmap.)</p>
 
+      <div class="ctl" style="margin-bottom:12px;max-width:680px">
+        <span>Match link (optional)</span>
+        <input id="liveUrl" type="url" placeholder="Paste a YouTube or stream link — we open it, you share that tab" />
+      </div>
       <div class="row" style="margin-bottom:16px">
         <div class="ctl"><span>Sport</span><select id="liveSport"></select></div>
         <div class="ctl"><span>Commentator</span><select id="livePersona"></select></div>
         <div class="ctl"><span>Language</span><select id="liveLang"></select></div>
-        <button id="liveStart" class="btn">Start — share your screen</button>
+        <button id="liveStart" class="btn">Start</button>
         <button id="liveStop" class="btn ghost hidden">Stop</button>
       </div>
 
       <div class="stage">
         <div id="liveEmpty" class="empty">
           <div class="big">Not capturing yet</div>
-          <div>Open the match in another tab or window, hit <b>Start</b>, and pick that tab to share. Keep this tab visible.</div>
+          <div>Paste a match link above (or open one in another tab), hit <b>Start</b>, and pick that tab to share. Mute the tab's own audio so you hear the AI call.</div>
         </div>
         <video id="liveVideo" playsinline muted class="hidden"></video>
         <div id="liveBadge" class="mode"><span class="pip" style="background:var(--live)"></span><span>LIVE</span></div>

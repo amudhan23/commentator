@@ -390,8 +390,16 @@ function paintLiveSelects() {
 }
 async function startLive() {
   if (!state.canGenerate) { $("liveStatus").textContent = "Live needs a Gemini key on the server (the deploy's key). Add one to use it."; return; }
+  // If the user pasted a match link, open it in their own tab first (their
+  // playback — we never fetch it server-side), then they share that tab.
+  const url = ($("liveUrl")?.value || "").trim();
+  if (url) {
+    try { window.open(/^https?:\/\//i.test(url) ? url : "https://" + url, "_blank", "noopener"); } catch {}
+    $("liveStatus").textContent = "Opened your match in a new tab. In the share dialog, pick that tab.";
+    await new Promise((r) => setTimeout(r, 600));
+  }
   try {
-    live.stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 15 }, audio: false });
+    live.stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 15 }, audio: false, preferCurrentTab: false });
   } catch { $("liveStatus").textContent = "Screen share was cancelled or blocked."; return; }
   const v = $("liveVideo");
   v.srcObject = live.stream; v.classList.remove("hidden"); $("liveEmpty").classList.add("hidden");
