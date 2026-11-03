@@ -416,6 +416,8 @@ async function startLive() {
 function stopLive() {
   if (live.timer) clearInterval(live.timer);
   live.timer = null;
+  try { live.audio?.pause(); } catch {}
+  try { speechSynthesis.cancel(); } catch {}
   live.stream?.getTracks().forEach((t) => t.stop());
   live.stream = null;
   $("liveVideo").classList.add("hidden"); $("liveEmpty").classList.remove("hidden");
@@ -469,7 +471,7 @@ async function liveTick() {
     if (r.notable && r.commentary && Date.now() - live.lastSpoke > 3500) {
       live.lastSpoke = Date.now();
       live.recent.push(r.commentary); if (live.recent.length > 5) live.recent.shift();
-      liveSpeak(r.commentary, r.bcp47);
+      livePlay(r.audio, r.commentary, r.bcp47);
       liveShowThird(r.eventType, r.commentary);
       liveLog(r.eventType, r.commentary);
     }
@@ -482,6 +484,19 @@ function liveShowThird(type, text) {
   $("liveSay").textContent = text;
   $("liveThird").classList.add("show");
   clearTimeout(liveThirdT); liveThirdT = setTimeout(() => $("liveThird").classList.remove("show"), 6000);
+}
+// Prefer the real ElevenLabs voice (served as a data URL); fall back to the
+// browser voice if the server couldn't synthesize (no key, or a hiccup).
+function livePlay(audio, text, bcp47) {
+  if (audio) {
+    try {
+      live.audio?.pause();
+      live.audio = new Audio(audio);
+      live.audio.play().catch(() => liveSpeak(text, bcp47));
+      return;
+    } catch {}
+  }
+  liveSpeak(text, bcp47);
 }
 function liveSpeak(text, bcp47) {
   try { const u = new SpeechSynthesisUtterance(text); u.lang = bcp47 || "en-US"; u.rate = 1.07; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch {}

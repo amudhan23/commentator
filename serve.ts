@@ -18,7 +18,7 @@ import { MatchAgent, MemoryEntry } from "./src/agent/matchAgent.js";
 import { listPersonas, saveCustomPersona } from "./src/commentary/personas.js";
 import { LANGUAGES } from "./src/commentary/languages.js";
 import { SPORTS } from "./src/commentary/sports.js";
-import { listVoices } from "./src/voice/speak.js";
+import { listVoices, ttsBuffer, LIVE_MODEL } from "./src/voice/speak.js";
 import { allStats, bump } from "./src/stats.js";
 import { makeClip } from "./src/clip.js";
 import { callLive } from "./src/vision/live.js";
@@ -278,7 +278,17 @@ async function api(req: IncomingMessage, res: ServerResponse, url: string) {
         sportAnalyst: sport.analyst, sportEvents: sport.events,
         recent: Array.isArray(body.recent) ? body.recent : [],
       });
-      return json(res, 200, { ...r, bcp47: lang.bcp47 });
+      // Real voice (ElevenLabs Flash — low latency) for notable moments, in the
+      // persona's voice. Non-fatal: if TTS fails, the client falls back to the
+      // browser voice so a moment is never dropped.
+      let audio: string | undefined;
+      if (r.notable && r.commentary && process.env.ELEVENLABS_API_KEY) {
+        try {
+          const buf = await ttsBuffer(r.commentary, persona.voiceId, LIVE_MODEL);
+          audio = `data:audio/mpeg;base64,${buf.toString("base64")}`;
+        } catch { /* fall back to browser voice on the client */ }
+      }
+      return json(res, 200, { ...r, bcp47: lang.bcp47, audio });
     } catch (e) {
       return json(res, 500, { error: e instanceof Error ? e.message : String(e) });
     }

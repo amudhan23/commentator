@@ -12,6 +12,39 @@ import { spawn } from "node:child_process";
 
 const DEFAULT_VOICE = process.env.ELEVENLABS_VOICE_ID || "21m00Tcm4TlvDq8ikWAM"; // "Rachel"
 const MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2";
+// Low-latency model for LIVE mode: Flash is ~sub-200ms TTFB and still
+// multilingual, so the real voice can keep up with the match. Override with
+// ELEVENLABS_LIVE_MODEL (e.g. a Turbo/other model) if you want.
+export const LIVE_MODEL = process.env.ELEVENLABS_LIVE_MODEL || "eleven_flash_v2_5";
+
+/** Synthesize `text` to raw mp3 bytes. Throws on failure. */
+export async function ttsBuffer(
+  text: string,
+  voiceId = DEFAULT_VOICE,
+  model = MODEL,
+): Promise<Buffer> {
+  const key = process.env.ELEVENLABS_API_KEY;
+  if (!key) throw new Error("Set ELEVENLABS_API_KEY in your .env (elevenlabs.io → Profile).");
+
+  return withRetry(async () => {
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`, {
+      method: "POST",
+      headers: { "xi-api-key": key, "content-type": "application/json" },
+      body: JSON.stringify({
+        text,
+        model_id: model,
+        voice_settings: { stability: 0.4, similarity_boost: 0.8 },
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      const err = new Error(`ElevenLabs ${res.status} (voice ${voiceId}, model ${model}): ${body.slice(0, 160)}`);
+      (err as { status?: number }).status = res.status;
+      throw err;
+    }
+    return Buffer.from(await res.arrayBuffer());
+  });
+}
 
 /** Synthesize `text` to an mp3 file and return the path. Throws on failure. */
 export async function synthesize(
@@ -19,28 +52,7 @@ export async function synthesize(
   outPath = "out.mp3",
   voiceId = DEFAULT_VOICE,
 ): Promise<string> {
-  const key = process.env.ELEVENLABS_API_KEY;
-  if (!key) throw new Error("Set ELEVENLABS_API_KEY in your .env (elevenlabs.io → Profile).");
-
-  const audio = await withRetry(async () => {
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-      method: "POST",
-      headers: { "xi-api-key": key, "content-type": "application/json" },
-      body: JSON.stringify({
-        text,
-        model_id: MODEL,
-        voice_settings: { stability: 0.4, similarity_boost: 0.8 },
-      }),
-    });
-    if (!res.ok) {
-      const body = await res.text();
-      const err = new Error(`ElevenLabs ${res.status} (voice ${voiceId}, model ${MODEL}): ${body.slice(0, 160)}`);
-      (err as { status?: number }).status = res.status;
-      throw err;
-    }
-    return Buffer.from(await res.arrayBuffer());
-  });
-
+  const audio = await ttsBuffer(text, voiceId, MODEL);
   await writeFile(outPath, audio);
   return outPath;
 }
