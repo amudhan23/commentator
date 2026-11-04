@@ -16,6 +16,8 @@ const state = {
   manifestFile: "",
   fired: new Set(),
   unmuteUntil: 0,
+  condense: false,
+  windows: [],
 };
 
 // ---------- boot ----------
@@ -184,6 +186,7 @@ function wireWatch() {
   $("video").addEventListener("timeupdate", onTime);
   $("video").addEventListener("seeked", () => (state.fired = new Set()));
   $("unmute").onchange = () => { if (!$("unmute").checked) { $("video").muted = true; $("mode").classList.remove("on", "broadcast"); } };
+  $("condense").onchange = toggleCondense;
   $("send").onclick = () => ask($("q").value);
   $("q").addEventListener("keydown", (e) => { if (e.key === "Enter") ask($("q").value); });
   const sug = ["What just happened?", "What was the best chance?", "Who's on top?", "Summarize the match"];
@@ -201,6 +204,7 @@ async function loadTrackByFile(file) {
   if (state.personas.some((p) => p.id === m.persona)) $("personaPick").value = m.persona;
   $("langPick").value = m.langSlug;
   renderMoments();
+  if (state.condense) computeWindows();
   // video
   if (m.clip) {
     setVideo(`clips/${m.clip}`);
@@ -230,6 +234,8 @@ function setVideo(src) {
     if (state.pendingMoment != null && state.manifest?.events?.[state.pendingMoment]) {
       v.currentTime = Math.max(0, state.manifest.events[state.pendingMoment].t - 3);
       state.pendingMoment = null;
+    } else if (state.condense && state.windows.length) {
+      v.currentTime = state.windows[0].start;
     }
     v.play().catch(() => {});
   };
@@ -240,6 +246,38 @@ function showEmpty(msg, localPick) {
   $("empty").classList.remove("hidden");
   $("emptyMsg").textContent = msg;
   $("localPickWrap").style.display = localPick ? "inline-flex" : "none";
+}
+
+// ---------- condense ("just the moments") ----------
+// Build play windows around the significant moments; skip the rest.
+function computeWindows() {
+  const evs = (state.manifest?.events || []).slice().sort((a, b) => a.t - b.t);
+  if (!evs.length) { state.windows = []; return; }
+  let keep = evs.filter((e) => (e.significance ?? 0.6) >= 0.5);
+  if (keep.length < 2) keep = evs; // too few? keep them all
+  const PRE = 4, POST = 7;
+  const raw = keep.map((e) => ({ start: Math.max(0, e.t - PRE), end: e.t + POST }));
+  const merged = [];
+  for (const w of raw) {
+    const last = merged[merged.length - 1];
+    if (last && w.start <= last.end + 1) last.end = Math.max(last.end, w.end);
+    else merged.push({ ...w });
+  }
+  state.windows = merged;
+}
+function toggleCondense() {
+  state.condense = $("condense").checked;
+  const v = $("video");
+  if (state.condense) {
+    computeWindows();
+    if (!state.windows.length) { $("watchStatus").textContent = "No moments to condense yet."; return; }
+    const total = Math.round(state.windows.reduce((s, w) => s + (w.end - w.start), 0));
+    const mins = total >= 60 ? `${Math.round(total / 60)} min` : `${total}s`;
+    $("watchStatus").textContent = `Condensed — ${state.windows.length} key moments, about ${mins}.`;
+    if (v.src) { state.fired = new Set(); v.currentTime = state.windows[0].start; v.play().catch(() => {}); }
+  } else if (state.manifest) {
+    $("watchStatus").textContent = `${state.manifest.events.length} moments · ${state.manifest.personaName} · ${state.manifest.langName}`;
+  }
 }
 
 function renderMoments() {
@@ -285,9 +323,20 @@ async function makeMomentClip(i, btn) {
 
 function onTime() {
   const m = state.manifest; if (!m) return;
-  const now = $("video").currentTime;
-  if ($("unmute").checked && now > state.unmuteUntil && $("video").muted === false) {
-    $("video").muted = true; $("mode").classList.remove("on", "broadcast");
+  const v = $("video");
+  const now = v.currentTime;
+  // Condense: skip the dead time between key-moment windows.
+  if (state.condense && state.windows.length) {
+    const inWin = state.windows.some((w) => now >= w.start - 0.3 && now <= w.end);
+    if (!inWin) {
+      const next = state.windows.find((w) => w.start > now + 0.1);
+      if (next) { v.currentTime = next.start; return; }
+      if (now < state.windows[state.windows.length - 1].end) { /* still in last window */ }
+      else { v.pause(); showThird("Done", "That's the match — the moments that mattered."); return; }
+    }
+  }
+  if ($("unmute").checked && now > state.unmuteUntil && v.muted === false) {
+    v.muted = true; $("mode").classList.remove("on", "broadcast");
   }
   m.events.forEach((e, i) => {
     if (state.fired.has(i) || now < e.t) return;
