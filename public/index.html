@@ -605,6 +605,39 @@
     </main>
   </div>
 
+  <style>
+    .sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;z-index:60;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+    .sheet-ov[hidden]{display:none}
+    .sheet{background:var(--surface-2);border:1px solid var(--line);border-radius:18px 18px 0 0;max-width:460px;width:100%;padding:22px;position:relative;animation:sheetUp .22s ease}
+    @media(min-width:560px){.sheet-ov{align-items:center}.sheet{border-radius:18px}}
+    @keyframes sheetUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .sheet h3{margin:0 0 4px;font-size:18px}
+    .sheet-sub{color:var(--muted);font-size:13px;margin:0 0 16px;line-height:1.45}
+    .sheet-x{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+    .sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .sbtn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:12px;font-weight:700;color:#fff;text-decoration:none;font-size:14px;cursor:pointer;border:none;transition:transform .12s}
+    .sbtn:hover{transform:translateY(-1px)}
+    .sbtn.wa{background:#25d366;color:#04310f}.sbtn.x{background:#111;border:1px solid #333}.sbtn.rd{background:#ff4500}.sbtn.tg{background:#2aabee;color:#06283a}
+    .sheet-copy{display:flex;gap:8px}
+    .sheet-copy input{flex:1;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--text);font-size:13px;min-width:0}
+  </style>
+  <div id="shareSheet" class="sheet-ov" hidden>
+    <div class="sheet">
+      <button class="sheet-x" id="sheetClose" aria-label="Close">&times;</button>
+      <h3>Share this match</h3>
+      <p class="sheet-sub">They open it and watch instantly — no sign-up. Every share helps more fans find commentary in their language.</p>
+      <div class="sheet-grid">
+        <a class="sbtn wa" id="shWhatsapp" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="sbtn x" id="shX" target="_blank" rel="noopener">X / Twitter</a>
+        <a class="sbtn rd" id="shReddit" target="_blank" rel="noopener">Reddit</a>
+        <a class="sbtn tg" id="shTelegram" target="_blank" rel="noopener">Telegram</a>
+      </div>
+      <div class="sheet-copy">
+        <input id="shLink" readonly />
+        <button class="btn" id="shCopy">Copy</button>
+      </div>
+    </div>
+  </div>
   <div id="toast" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--flood);color:#241a00;font-weight:600;padding:11px 20px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;z-index:50"></div>
   <script src="app.js"></script>
 </body>

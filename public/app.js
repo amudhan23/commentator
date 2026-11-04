@@ -27,6 +27,9 @@ async function boot() {
   wireCommentators();
   heroAnim();
   $("shareBtn").onclick = shareCurrent;
+  $("sheetClose").onclick = closeShareSheet;
+  $("shareSheet").onclick = (e) => { if (e.target.id === "shareSheet") closeShareSheet(); };
+  $("shCopy").onclick = () => copy($("shLink").value, () => toast("Link copied"));
   wireWaitlist();
   await refreshAll();
   // deep link: /?t=<trackfile>[&m=<momentIndex>] opens that match (at that moment)
@@ -262,7 +265,9 @@ function renderMoments() {
 function shareMoment(i) {
   if (!state.manifestFile) return;
   const url = `${location.origin}/?t=${encodeURIComponent(state.manifestFile)}&m=${i}`;
-  copy(url, () => toast("Moment link copied"));
+  const m = trackMeta(state.manifestFile);
+  const lang = m?.langName ? ` in ${m.langName}` : "";
+  openShareSheet(url, `🔥 Watch this moment called${lang} by AI — try your own free at`);
 }
 
 async function makeMomentClip(i, btn) {
@@ -623,12 +628,23 @@ function recordView(file) {
 function prettyClip(name) { return String(name || "").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
 
 function shareCurrent() { if (state.manifestFile) shareTrack(state.manifestFile); else toast("Load a match first"); }
+function trackMeta(file) { return (state.tracks || []).find((t) => t.file === file); }
 function shareTrack(file) {
   const url = `${location.origin}/?t=${encodeURIComponent(file)}`;
-  const done = () => toast("Link copied — share it anywhere");
-  if (navigator.share) { navigator.share({ title: "Commentator — watch this match", url }).catch(() => copy(url, done)); }
-  else copy(url, done);
+  const m = trackMeta(file);
+  const lang = m?.langName ? ` in ${m.langName}` : "";
+  openShareSheet(url, `🏟️ Watch this match called${lang} by AI — try your own free at`);
 }
+function openShareSheet(url, text) {
+  const u = encodeURIComponent(url), full = encodeURIComponent(text + " " + url), t = encodeURIComponent(text);
+  $("shWhatsapp").href = `https://wa.me/?text=${full}`;
+  $("shX").href = `https://twitter.com/intent/tweet?text=${t}&url=${u}`;
+  $("shReddit").href = `https://www.reddit.com/submit?url=${u}&title=${encodeURIComponent("Match called by AI in your language — " + url)}`;
+  $("shTelegram").href = `https://t.me/share/url?url=${u}&text=${t}`;
+  $("shLink").value = url;
+  $("shareSheet").hidden = false;
+}
+function closeShareSheet() { $("shareSheet").hidden = true; }
 function copy(text, cb) { navigator.clipboard?.writeText(text).then(cb).catch(() => { prompt("Copy this link:", text); }); }
 let toastT;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.opacity = "1"; t.style.transform = "translateX(-50%) translateY(0)"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; t.style.transform = "translateX(-50%) translateY(20px)"; }, 2200); }
