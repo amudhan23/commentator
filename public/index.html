@@ -483,6 +483,11 @@
       <h1 class="title">Watch</h1>
       <p class="lead">Pick a generated track and watch the match called your way — switch the commentator or language on the fly, or let it unmute the real broadcast on the big moments.</p>
 
+      <div id="watchCta" class="watch-cta" hidden>
+        <div><b>Like this?</b> Call any match in your own language and voice — free, no sign-up.</div>
+        <button class="btn" data-go="studio">Make your own →</button>
+      </div>
+
       <div class="row" style="margin-bottom:16px">
         <div class="ctl" style="min-width:260px">
           <span>Track</span>
@@ -620,6 +625,10 @@
     .sbtn.wa{background:#25d366;color:#04310f}.sbtn.x{background:#111;border:1px solid #333}.sbtn.rd{background:#ff4500}.sbtn.tg{background:#2aabee;color:#06283a}
     .sheet-copy{display:flex;gap:8px}
     .sheet-copy input{flex:1;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--text);font-size:13px;min-width:0}
+    .watch-cta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:linear-gradient(90deg,rgba(255,176,32,.12),rgba(255,176,32,.03));border:1px solid rgba(255,176,32,.3);border-radius:14px;padding:14px 18px;margin-bottom:18px}
+    .watch-cta[hidden]{display:none}
+    .watch-cta div{font-size:14px;color:var(--text)}
+    .watch-cta .btn{white-space:nowrap}
   </style>
   <div id="shareSheet" class="sheet-ov" hidden>
     <div class="sheet">

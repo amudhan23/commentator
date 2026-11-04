@@ -39,6 +39,8 @@ async function boot() {
     const m = params.get("m");
     state.pendingMoment = m !== null ? Number(m) : null;
     go("watch"); loadTrackByFile(t);
+    // Arrived from a shared link — invite them to make their own (close the loop).
+    const cta = $("watchCta"); if (cta) cta.hidden = false;
   }
 }
 
